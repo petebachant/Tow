@@ -1,0 +1,18 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>next.png</file>
+    <file>next.png</file>
+    <file>start.png</file>
+    <file>back.png</file>
+    <file>forward.png</file>
+    <file>cancelx.png</file>
+    <file>go-first.png</file>
+    <file>agt_stop.png</file>
+    <file>go-home.png</file>
+    <file>go-last.png</file>
+    <file>onoff_blue.png</file>
+    <file>checkmark.png</file>
+    <file>tow_icon2.png</file>
+    <file>yellow_power.png</file>
+  </qresource>
+</RCC>
