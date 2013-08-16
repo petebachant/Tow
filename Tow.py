@@ -73,8 +73,8 @@ class MainWindow(QtGui.QMainWindow):
         # Connect to the controller
         self.simulator = False
         self.retry = True
-        if self.simulator == True: self.hcomm = acsc.OpenCommDirect()
-        else: self.hcomm = acsc.OpenCommEthernetTCP("10.0.0.100", 701)
+        if self.simulator == True: self.hcomm = acsc.openCommDirect()
+        else: self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
         
         # If connection fails, bring up error message box
         while self.hcomm == acsc.INVALID and self.retry == True:
@@ -94,15 +94,15 @@ class MainWindow(QtGui.QMainWindow):
             ret = c_err_box.exec_()
             
             if ret == QMessageBox.Retry:
-                if self.simulator: self.hcomm = acsc.OpenCommDirect()
-                else: self.hcomm = acsc.OpenCommEthernetTCP("10.0.0.100", 701)
+                if self.simulator: self.hcomm = acsc.openCommDirect()
+                else: self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
             elif ret == QMessageBox.Abort:
                 self.connectfail = True
                 self.retry = False
                 self.UpdateTimer.start(200)
             elif ret == QMessageBox.AcceptRole:
                 self.simulator = True
-                self.hcomm = acsc.OpenCommDirect()
+                self.hcomm = acsc.openCommDirect()
             
         if self.hcomm != acsc.INVALID:
             self.UpdateTimer.start(200)
@@ -110,10 +110,10 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.actionRunHoming.setEnabled(True)
         
         # Register the emergency stop button            
-        acsc.RegisterEmergencyStop()
+        acsc.registerEmergencyStop()
         
         # Make sure jog program is not running
-        acsc.StopBuffer(self.hcomm, 5)
+        acsc.stopBuffer(self.hcomm, 5)
 
         # Create the jog group action group
         self.offset_group = QActionGroup(self)
@@ -152,7 +152,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.hcomm == acsc.INVALID:
             self.close()
         
-        self.mstate = acsc.GetMotorState(self.hcomm, self.axis,
+        self.mstate = acsc.getMotorState(self.hcomm, self.axis,
                                         acsc.SYNCHRONOUS)
                                         
         if self.mstate == "disabled":
@@ -161,7 +161,7 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.enableAxis.setIcon(QIcon(":icons/checkmark.png"))
             enabled = False
             self.jogmode = False
-            acsc.StopBuffer(self.hcomm, 5)
+            acsc.stopBuffer(self.hcomm, 5)
         else:
             self.ui.enableAxis.setChecked(True)
             self.ui.enableAxis.setText("Disable")
@@ -174,7 +174,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.toolBar_Jog.setEnabled(enabled)
 
         if self.simulator == False:
-            self.homecounter = acsc.ReadInteger(self.hcomm, None, 
+            self.homecounter = acsc.readInteger(self.hcomm, None, 
                                                 "homeCounter_tow")         
         
         if self.homecounter > 0 or self.override == True:
@@ -191,28 +191,28 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.actionJogPendant.setChecked(False)
         
         # Get and display reference position and velocity
-        self.rpos = acsc.GetRPosition(self.hcomm, self.axis)
-        self.rvel = acsc.GetRVelocity(self.hcomm, self.axis)
+        self.rpos = acsc.getRPosition(self.hcomm, self.axis)
+        self.rvel = acsc.getRVelocity(self.hcomm, self.axis)
         self.poslabel.setText("Pos. (m): %.3f " % self.rpos)
         self.vellabel.setText("Vel. (m/s): %.2f " % self.rvel)
         
         # Get axis state
-        self.astate = acsc.GetAxisState(self.hcomm, self.axis)
+        self.astate = acsc.getAxisState(self.hcomm, self.axis)
         
     def on_enableAxis_click(self):
         if self.mstate == "disabled":
-            acsc.Enable(self.hcomm, self.axis, acsc.SYNCHRONOUS)
+            acsc.enable(self.hcomm, self.axis, acsc.SYNCHRONOUS)
             self.ui.enableAxis.setText("Disable")
             
         else:
-            acsc.Disable(self.hcomm, self.axis, acsc.SYNCHRONOUS)
+            acsc.disable(self.hcomm, self.axis, acsc.SYNCHRONOUS)
             self.ui.enableAxis.setText("Enable")
             
     def on_runHoming(self):
         if self.simulator == True:
             self.homecounter += 1
         else:
-            acsc.RunBuffer(self.hcomm, 2, None)
+            acsc.runBuffer(self.hcomm, 2, None)
             
         self.ui.rbAbsolute.setChecked(True)
         self.on_abs()
@@ -224,45 +224,45 @@ class MainWindow(QtGui.QMainWindow):
         vel = self.ui.velSpinBox.value()
         acc = self.ui.accSpinBox.value()
         
-        acsc.SetVelocity(self.hcomm, self.axis, vel)
-        acsc.SetAcceleration(self.hcomm, self.axis, acc)
-        acsc.SetDeceleration(self.hcomm, self.axis, acc)
-        acsc.SetJerk(self.hcomm, self.axis, acc*10)
+        acsc.setVelocity(self.hcomm, self.axis, vel)
+        acsc.setAcceleration(self.hcomm, self.axis, acc)
+        acsc.setDeceleration(self.hcomm, self.axis, acc)
+        acsc.setJerk(self.hcomm, self.axis, acc*10)
         
         if self.ui.rbRelative.isChecked() == True:
             flags = acsc.AMF_RELATIVE
         else: flags = None
         
-        acsc.ToPoint(self.hcomm, flags, self.axis, target)
+        acsc.toPoint(self.hcomm, flags, self.axis, target)
       
     def on_pbJogMinus_press(self):
-        acsc.SetAcceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
-        acsc.SetDeceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
-        acsc.SetJerk(self.hcomm, self.axis, 2, acsc.SYNCHRONOUS)
-        acsc.Jog(self.hcomm, acsc.AMF_VELOCITY, self.axis, -0.2)
+        acsc.setAcceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
+        acsc.setDeceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
+        acsc.setJerk(self.hcomm, self.axis, 2, acsc.SYNCHRONOUS)
+        acsc.jog(self.hcomm, acsc.AMF_VELOCITY, self.axis, -0.2)
         
     def on_pbJogMinus_release(self):
-        acsc.Halt(self.hcomm, self.axis)
+        acsc.halt(self.hcomm, self.axis)
         
     def on_pbJogPlus_press(self):
-        acsc.SetAcceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
-        acsc.SetDeceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
-        acsc.SetJerk(self.hcomm, self.axis, 2, acsc.SYNCHRONOUS)
-        acsc.Jog(self.hcomm, acsc.AMF_VELOCITY, self.axis, 0.2)
+        acsc.setAcceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
+        acsc.setDeceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
+        acsc.setJerk(self.hcomm, self.axis, 2, acsc.SYNCHRONOUS)
+        acsc.jog(self.hcomm, acsc.AMF_VELOCITY, self.axis, 0.2)
         
     def on_pbJogPlus_release(self):
-        acsc.Halt(self.hcomm, self.axis)
+        acsc.halt(self.hcomm, self.axis)
         
     def on_JogPendant(self):
         if self.jogmode == False:
             self.jogmode = True
-            acsc.RunBuffer(self.hcomm, 5, None)            
+            acsc.runBuffer(self.hcomm, 5, None)            
         elif self.jogmode == True:
-            acsc.StopBuffer(self.hcomm, 5)
+            acsc.stopBuffer(self.hcomm, 5)
             self.jogmode = False
         
     def on_halt(self):
-        acsc.Halt(self.hcomm, self.axis)
+        acsc.halt(self.hcomm, self.axis)
         
     def on_actionAbout(self):
         about_text = QString("<b>Tow 0.1.1</b><br>")
@@ -301,35 +301,35 @@ class MainWindow(QtGui.QMainWindow):
         vel = self.ui.velSpinBox.value()
         acc = self.ui.accSpinBox.value()
         
-        acsc.SetVelocity(self.hcomm, self.axis, vel)
-        acsc.SetAcceleration(self.hcomm, self.axis, acc)
-        acsc.SetDeceleration(self.hcomm, self.axis, acc)
-        acsc.SetJerk(self.hcomm, self.axis, acc*10)
+        acsc.setVelocity(self.hcomm, self.axis, vel)
+        acsc.setAcceleration(self.hcomm, self.axis, acc)
+        acsc.setDeceleration(self.hcomm, self.axis, acc)
+        acsc.setJerk(self.hcomm, self.axis, acc*10)
         
-        acsc.ToPoint(self.hcomm, None, self.axis, self.leftlimit)
+        acsc.toPoint(self.hcomm, None, self.axis, self.leftlimit)
         
         
     def on_goRightLimit(self):
         vel = self.ui.velSpinBox.value()
         acc = self.ui.accSpinBox.value()
         
-        acsc.SetVelocity(self.hcomm, self.axis, vel)
-        acsc.SetAcceleration(self.hcomm, self.axis, acc)
-        acsc.SetDeceleration(self.hcomm, self.axis, acc)
-        acsc.SetJerk(self.hcomm, self.axis, acc*10)
+        acsc.setVelocity(self.hcomm, self.axis, vel)
+        acsc.setAcceleration(self.hcomm, self.axis, acc)
+        acsc.setDeceleration(self.hcomm, self.axis, acc)
+        acsc.setJerk(self.hcomm, self.axis, acc*10)
         
-        acsc.ToPoint(self.hcomm, None, self.axis, 0.0)
+        acsc.toPoint(self.hcomm, None, self.axis, 0.0)
         
     def on_goPlatform(self):
         vel = self.ui.velSpinBox.value()
         acc = self.ui.accSpinBox.value()
         
-        acsc.SetVelocity(self.hcomm, self.axis, vel)
-        acsc.SetAcceleration(self.hcomm, self.axis, acc)
-        acsc.SetDeceleration(self.hcomm, self.axis, acc)
-        acsc.SetJerk(self.hcomm, self.axis, acc*10)
+        acsc.setVelocity(self.hcomm, self.axis, vel)
+        acsc.setAcceleration(self.hcomm, self.axis, acc)
+        acsc.setDeceleration(self.hcomm, self.axis, acc)
+        acsc.setJerk(self.hcomm, self.axis, acc*10)
         
-        acsc.ToPoint(self.hcomm, None, self.axis, self.platform)
+        acsc.toPoint(self.hcomm, None, self.axis, self.platform)
         
         
     def on_override(self):
@@ -352,9 +352,9 @@ class MainWindow(QtGui.QMainWindow):
         if self.UpdateTimer.isActive():
             self.UpdateTimer.stop()
             
-        acsc.StopBuffer(self.hcomm, 5)
-        acsc.CloseComm(self.hcomm)
-        acsc.UnregisterEmergencyStop()
+        acsc.stopBuffer(self.hcomm, 5)
+        acsc.closeComm(self.hcomm)
+        acsc.unregisterEmergencyStop()
             
 
 def main():
