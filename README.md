@@ -1,7 +1,18 @@
 Tow
 ===
+Tow is an app for controlling UNH's tow carriage motion. It accesses functions in the ACS Motion Control C library through a wrapper module called acsc, available in the misc_python repository.
 
-Tow Copyright (C) 2013 Peter Bachant
+Dependencies
+-----------
+  * Python 2.7x
+  * PyQt4
+  * acsc.py (see the misc_python repository)
+  * ACS motion control C library
+
+
+License
+-------
+Tow Copyright (c) 2013 Peter Bachant
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,4 +27,4 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-Tow is app for controlling UNH's tow carriage motion.
+
