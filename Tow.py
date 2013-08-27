@@ -15,7 +15,7 @@ from PyQt4 import QtGui
 from mainwindow import *
 import sys
 #import time
-import acsc
+from acspy import acsc
 #import matplotlib.pyplot as plt
 #import numpy as np
 
