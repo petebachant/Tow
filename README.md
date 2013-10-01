@@ -9,12 +9,6 @@ Dependencies
   * acsc.py (see the misc_python repository)
   * ACS motion control C library
 
-
-$$
-F = ma
-$$
-
-
 License
 -------
 Tow Copyright (c) 2013 Peter Bachant
