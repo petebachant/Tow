@@ -6,7 +6,7 @@ Dependencies
 -----------
   * Python 2.7x
   * PyQt4
-  * acsc.py (see the misc_python repository)
+  * acspy (presently unreleased)
   * ACS motion control C library
 
 License
