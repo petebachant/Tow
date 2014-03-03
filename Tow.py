@@ -7,11 +7,17 @@ To create interface, run "buildgui.bat" from command prompt
 To build and run executable, run "buildrun.bat" from command prompt 
 
 @author: Pete
+
+To-do
+  * TCP server for remote control
+  * Update any acsc function changes
+
 """
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import QtGui
+from PyQt4 import QtNetwork
 from mainwindow import *
 import sys
 #import time
@@ -123,6 +129,11 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.traverse3m.setActionGroup(self.offset_group)
         self.ui.traverse4m.setActionGroup(self.offset_group)
         
+        # Create TCP server for remote control
+        remoteserver = QtNetwork.QTcpServer()
+        print str(remoteserver.serverAddress().toString())
+        
+        # Connect signlals and slots        
         self.connectslots()
         
     def connectslots(self):        
@@ -153,7 +164,7 @@ class MainWindow(QtGui.QMainWindow):
             self.close()
         
         self.mstate = acsc.getMotorState(self.hcomm, self.axis,
-                                        acsc.SYNCHRONOUS)
+                                         acsc.SYNCHRONOUS)
                                         
         if self.mstate == "disabled":
             self.ui.enableAxis.setChecked(False)
@@ -209,7 +220,7 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.enableAxis.setText("Enable")
             
     def on_runHoming(self):
-        if self.simulator == True:
+        if self.simulator:
             self.homecounter += 1
         else:
             acsc.runBuffer(self.hcomm, 2, None)
@@ -231,7 +242,8 @@ class MainWindow(QtGui.QMainWindow):
         
         if self.ui.rbRelative.isChecked() == True:
             flags = acsc.AMF_RELATIVE
-        else: flags = None
+        else: 
+            flags = None
         
         acsc.toPoint(self.hcomm, flags, self.axis, target)
       
