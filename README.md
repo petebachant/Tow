@@ -9,6 +9,10 @@ Dependencies
   * acspy (presently unreleased)
   * ACS motion control C library
 
+To-do 
+-----
+  * Make maximum relative move much smaller for safety
+
 License
 -------
 Tow Copyright (c) 2013 Peter Bachant
