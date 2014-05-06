@@ -4,7 +4,7 @@ Tow is an app for controlling UNH's tow carriage motion. It accesses functions i
 
 Dependencies
 -----------
-  * Python 2.7x
+  * Python 2.7
   * PyQt4
   * [ACSpy](https://github.com/petebachant/ACSpy)
   * ACS motion control C library
