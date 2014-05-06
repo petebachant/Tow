@@ -6,12 +6,13 @@ Dependencies
 -----------
   * Python 2.7x
   * PyQt4
-  * acspy (presently unreleased)
+  * [ACSpy](https://github.com/petebachant/ACSpy)
   * ACS motion control C library
 
 To-do 
 -----
   * Make maximum relative move much smaller for safety
+  * When homing routine is adjusted to find positive limit, compute safe moves from this and `RPOS`
 
 License
 -------
