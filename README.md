@@ -11,10 +11,10 @@ Dependencies
 
 To-do 
 -----
-  [ ] Make maximum relative move much smaller for safety
-  [ ] When homing routine is adjusted to find positive limit, compute safe moves from this and `RPOS`
-  [ ] Android remote control via TCP/IP
-  [ ] Automatic tweeting
+  - [ ] Make maximum relative move much smaller for safety
+  - [ ] When homing routine is adjusted to find positive limit, compute safe moves from this and `RPOS`
+  - [ ] Android remote control via TCP/IP
+  - [ ] Automatic tweeting
 
 License
 -------
