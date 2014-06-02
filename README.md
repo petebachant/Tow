@@ -15,6 +15,12 @@ To-do
   - [ ] When homing routine is adjusted to find positive limit, compute safe moves from this and `RPOS`
   - [ ] Android remote control via TCP/IP
   - [ ] Automatic tweeting
+  - [ ] New icon
+  - [ ] Detect if jog buffer is running at startup
+  
+### Potential ideas
+  * Password for homing override
+  * Button for reversing direction on move, i.e. multiplying target position by -1
 
 License
 -------
