@@ -9,19 +9,6 @@ Dependencies
   * [ACSpy](https://github.com/petebachant/ACSpy)
   * ACS motion control C library
 
-To-do 
------
-  - [ ] Make maximum relative move much smaller for safety
-  - [ ] When homing routine is adjusted to find positive limit, compute safe moves from this and `RPOS`
-  - [ ] Android remote control via TCP/IP
-  - [ ] Automatic tweeting
-  - [ ] New icon
-  - [ ] Detect if jog buffer is running at startup
-  
-### Potential ideas
-  * Password for homing override
-  * Button for reversing direction on move, i.e. multiplying target position by -1
-
 License
 -------
 Tow Copyright (c) 2013-2014 Peter Bachant
