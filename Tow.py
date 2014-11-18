@@ -8,11 +8,9 @@ To build and run executable, run "buildrun.bat" from command prompt
 
 @author: Pete
 
-To-do
-  * TCP server for remote control
-  * Update any acsc function changes
-
 """
+
+from __future__ import division, print_function
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -84,9 +82,9 @@ class MainWindow(QtGui.QMainWindow):
         
         # If connection fails, bring up error message box
         while self.hcomm == acsc.INVALID and self.retry == True:
-            msgtxt = QString("Unable to connect to controller.<br>")
-            msgtxt.append("Check that controller is powered-on and ")
-            msgtxt.append("SPiiPlus User Mode Driver is running.")
+            msgtxt = "Unable to connect to controller.\n\n"
+            msgtxt += "Check that controller is powered-on and "
+            msgtxt += "SPiiPlus User Mode Driver is running."
             c_err_box = QMessageBox()
             c_err_box.setIcon(QMessageBox.Critical)
             c_err_box.setWindowIcon(QIcon(':/icons/tow_icon2.png'))
@@ -131,7 +129,7 @@ class MainWindow(QtGui.QMainWindow):
         
         # Create TCP server for remote control
         remoteserver = QtNetwork.QTcpServer()
-        print str(remoteserver.serverAddress().toString())
+        print(str(remoteserver.serverAddress().toString()))
         
         # Connect signlals and slots        
         self.connectslots()
@@ -301,7 +299,7 @@ class MainWindow(QtGui.QMainWindow):
             self.leftlimit = 21.9
             self.platform = 6.0
         elif self.ui.traverseCustom.isChecked():
-            print "Nope, not yet"
+            print("Nope, not yet")
             
         if self.ui.rbRelative.isChecked():
             self.ui.posSpinBox.setMinimum(-self.leftlimit)
