@@ -30,13 +30,14 @@ class MainWindow(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
-        # Set up some constants
+        # Set up some parameters
         self.axis = 5
         self.homecounter = 0
         self.jogmode = False
         self.leftlimit = 24.9
         self.platform = 9.0
         self.override = False
+        self.axis_enabled = False
 
         # Set initial states of all buttons
         self.ui.rbAbsolute.setEnabled(False)
@@ -77,11 +78,13 @@ class MainWindow(QtGui.QMainWindow):
         # Connect to the controller
         self.simulator = False
         self.retry = True
-        if self.simulator == True: self.hcomm = acsc.openCommDirect()
-        else: self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
+        if self.simulator: 
+            self.hcomm = acsc.openCommDirect()
+        else: 
+            self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
         
         # If connection fails, bring up error message box
-        while self.hcomm == acsc.INVALID and self.retry == True:
+        while self.hcomm == acsc.INVALID and self.retry:
             msgtxt = "Unable to connect to controller.\n\n"
             msgtxt += "Check that controller is powered-on and "
             msgtxt += "SPiiPlus User Mode Driver is running."
@@ -103,13 +106,13 @@ class MainWindow(QtGui.QMainWindow):
             elif ret == QMessageBox.Abort:
                 self.connectfail = True
                 self.retry = False
-                self.UpdateTimer.start(200)
+                self.UpdateTimer.start(10)
             elif ret == QMessageBox.AcceptRole:
                 self.simulator = True
                 self.hcomm = acsc.openCommDirect()
             
         if self.hcomm != acsc.INVALID:
-            self.UpdateTimer.start(200)
+            self.UpdateTimer.start(150)
             self.ui.enableAxis.setEnabled(True)
             self.ui.actionRunHoming.setEnabled(True)
         
@@ -163,24 +166,24 @@ class MainWindow(QtGui.QMainWindow):
         
         self.mstate = acsc.getMotorState(self.hcomm, self.axis,
                                          acsc.SYNCHRONOUS)
+                                         
+        self.axis_enabled = self.mstate["enabled"]
                                         
-        if self.mstate == "disabled":
-            self.ui.enableAxis.setChecked(False)
-            self.ui.enableAxis.setText("Enable")
-            self.ui.enableAxis.setIcon(QIcon(":icons/checkmark.png"))
-            enabled = False
-            self.jogmode = False
-            acsc.stopBuffer(self.hcomm, 5)
-        else:
+        if self.axis_enabled:
             self.ui.enableAxis.setChecked(True)
             self.ui.enableAxis.setText("Disable")
             self.ui.enableAxis.setIcon(QIcon(":icons/cancelx.png"))
-            enabled = True
+        else:
+            self.ui.enableAxis.setChecked(False)
+            self.ui.enableAxis.setText("Enable")
+            self.ui.enableAxis.setIcon(QIcon(":icons/checkmark.png"))
+            self.jogmode = False
+            acsc.stopBuffer(self.hcomm, 5)
         
-        self.ui.dock_ptp.setEnabled(enabled)
-        self.ui.dock_jog.setEnabled(enabled)
-        self.ui.pbJogPendant.setEnabled(enabled)
-        self.ui.toolBar_Jog.setEnabled(enabled)
+        self.ui.dock_ptp.setEnabled(self.axis_enabled)
+        self.ui.dock_jog.setEnabled(self.axis_enabled)
+        self.ui.pbJogPendant.setEnabled(self.axis_enabled)
+        self.ui.toolBar_Jog.setEnabled(self.axis_enabled)
 
         if self.simulator == False:
             self.homecounter = acsc.readInteger(self.hcomm, None, 
@@ -205,15 +208,13 @@ class MainWindow(QtGui.QMainWindow):
         self.poslabel.setText("Pos. (m): %.3f " % self.rpos)
         self.vellabel.setText("Vel. (m/s): %.2f " % self.rvel)
         
-        # Get axis state
-        self.astate = acsc.getAxisState(self.hcomm, self.axis)
-        
     def on_enableAxis_click(self):
-        if self.mstate == "disabled":
+        if self.ui.enableAxis.isChecked():
+            self.axis_enabled = True
             acsc.enable(self.hcomm, self.axis, acsc.SYNCHRONOUS)
             self.ui.enableAxis.setText("Disable")
-            
         else:
+            self.axis_enabled = False
             acsc.disable(self.hcomm, self.axis, acsc.SYNCHRONOUS)
             self.ui.enableAxis.setText("Enable")
             
@@ -222,7 +223,6 @@ class MainWindow(QtGui.QMainWindow):
             self.homecounter += 1
         else:
             acsc.runBuffer(self.hcomm, 2, None)
-            
         self.ui.rbAbsolute.setChecked(True)
         self.on_abs()
         self.ui.actionOverride.setEnabled(False)
