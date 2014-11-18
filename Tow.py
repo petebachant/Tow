@@ -18,10 +18,7 @@ from PyQt4 import QtGui
 from PyQt4 import QtNetwork
 from mainwindow import *
 import sys
-#import time
 from acspy import acsc
-#import matplotlib.pyplot as plt
-#import numpy as np
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -71,9 +68,11 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pbJogPlus.setFixedWidth(32)
         self.ui.dock_jog.close()
         
-        # Set up a timer
-        self.UpdateTimer = QTimer()
-        self.UpdateTimer.timeout.connect(self.on_timer)
+        # Set up timers
+        self.timer_slow = QTimer()
+        self.timer_slow.timeout.connect(self.on_timer_slow)
+        self.timer_fast = QTimer()
+        self.timer_fast.timeout.connect(self.on_timer_fast)
 
         # Connect to the controller
         self.simulator = False
@@ -106,13 +105,14 @@ class MainWindow(QtGui.QMainWindow):
             elif ret == QMessageBox.Abort:
                 self.connectfail = True
                 self.retry = False
-                self.UpdateTimer.start(10)
+                self.timer_fast.start(10)
             elif ret == QMessageBox.AcceptRole:
                 self.simulator = True
                 self.hcomm = acsc.openCommDirect()
             
         if self.hcomm != acsc.INVALID:
-            self.UpdateTimer.start(150)
+            self.timer_slow.start(200)
+            self.timer_fast.start(50)
             self.ui.enableAxis.setEnabled(True)
             self.ui.actionRunHoming.setEnabled(True)
         
@@ -160,14 +160,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.rbAbsolute.clicked.connect(self.on_abs)
         self.ui.rbRelative.clicked.connect(self.on_rel)
         
-    def on_timer(self):
-        if self.hcomm == acsc.INVALID:
-            self.close()
-        
-        self.mstate = acsc.getMotorState(self.hcomm, self.axis,
-                                         acsc.SYNCHRONOUS)
-                                         
-        self.axis_enabled = self.mstate["enabled"]
+    def on_timer_slow(self):                                         
+        self.axis_enabled = acsc.getMotorEnabled(self.hcomm, self.axis)
                                         
         if self.axis_enabled:
             self.ui.enableAxis.setChecked(True)
@@ -179,15 +173,18 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.enableAxis.setIcon(QIcon(":icons/checkmark.png"))
             self.jogmode = False
             acsc.stopBuffer(self.hcomm, 5)
-        
+            
+        if self.simulator == False:
+            self.homecounter = acsc.readInteger(self.hcomm, None, 
+                                                "homeCounter_tow")
+            
+    def on_timer_fast(self):
+        if self.hcomm == acsc.INVALID:
+            self.close()
         self.ui.dock_ptp.setEnabled(self.axis_enabled)
         self.ui.dock_jog.setEnabled(self.axis_enabled)
         self.ui.pbJogPendant.setEnabled(self.axis_enabled)
         self.ui.toolBar_Jog.setEnabled(self.axis_enabled)
-
-        if self.simulator == False:
-            self.homecounter = acsc.readInteger(self.hcomm, None, 
-                                                "homeCounter_tow")         
         
         if self.homecounter > 0 or self.override == True:
             self.ui.rbAbsolute.setEnabled(True)
@@ -209,7 +206,7 @@ class MainWindow(QtGui.QMainWindow):
         self.vellabel.setText("Vel. (m/s): %.2f " % self.rvel)
         
     def on_enableAxis_click(self):
-        if self.ui.enableAxis.isChecked():
+        if not self.axis_enabled:
             self.axis_enabled = True
             acsc.enable(self.hcomm, self.axis, acsc.SYNCHRONOUS)
             self.ui.enableAxis.setText("Disable")
@@ -232,17 +229,14 @@ class MainWindow(QtGui.QMainWindow):
         target = self.ui.posSpinBox.value()
         vel = self.ui.velSpinBox.value()
         acc = self.ui.accSpinBox.value()
-        
         acsc.setVelocity(self.hcomm, self.axis, vel)
         acsc.setAcceleration(self.hcomm, self.axis, acc)
         acsc.setDeceleration(self.hcomm, self.axis, acc)
         acsc.setJerk(self.hcomm, self.axis, acc*10)
-        
         if self.ui.rbRelative.isChecked() == True:
             flags = acsc.AMF_RELATIVE
         else: 
             flags = None
-        
         acsc.toPoint(self.hcomm, flags, self.axis, target)
       
     def on_pbJogMinus_press(self):
@@ -281,7 +275,6 @@ class MainWindow(QtGui.QMainWindow):
         about_text.append("petebachant@gmail.com")
         QMessageBox.about(self, "About Tow", about_text)
         
-        
     def on_traverseChange(self):
         if self.ui.traverseOff.isChecked():
             self.leftlimit = 26.2
@@ -300,53 +293,41 @@ class MainWindow(QtGui.QMainWindow):
             self.platform = 6.0
         elif self.ui.traverseCustom.isChecked():
             print("Nope, not yet")
-            
         if self.ui.rbRelative.isChecked():
             self.ui.posSpinBox.setMinimum(-self.leftlimit)
-        
         self.ui.posSpinBox.setMaximum(self.leftlimit)
-            
             
     def on_goLeftLimit(self):
         vel = self.ui.velSpinBox.value()
         acc = self.ui.accSpinBox.value()
-        
         acsc.setVelocity(self.hcomm, self.axis, vel)
         acsc.setAcceleration(self.hcomm, self.axis, acc)
         acsc.setDeceleration(self.hcomm, self.axis, acc)
         acsc.setJerk(self.hcomm, self.axis, acc*10)
-        
         acsc.toPoint(self.hcomm, None, self.axis, self.leftlimit)
-        
         
     def on_goRightLimit(self):
         vel = self.ui.velSpinBox.value()
         acc = self.ui.accSpinBox.value()
-        
         acsc.setVelocity(self.hcomm, self.axis, vel)
         acsc.setAcceleration(self.hcomm, self.axis, acc)
         acsc.setDeceleration(self.hcomm, self.axis, acc)
         acsc.setJerk(self.hcomm, self.axis, acc*10)
-        
         acsc.toPoint(self.hcomm, None, self.axis, 0.0)
         
     def on_goPlatform(self):
         vel = self.ui.velSpinBox.value()
         acc = self.ui.accSpinBox.value()
-        
         acsc.setVelocity(self.hcomm, self.axis, vel)
         acsc.setAcceleration(self.hcomm, self.axis, acc)
         acsc.setDeceleration(self.hcomm, self.axis, acc)
         acsc.setJerk(self.hcomm, self.axis, acc*10)
-        
         acsc.toPoint(self.hcomm, None, self.axis, self.platform)
-        
         
     def on_override(self):
         self.override = True
         self.ui.rbAbsolute.setChecked(True)
 
-        
     def on_abs(self):
         if not self.override:
             self.ui.posSpinBox.setMinimum(0.0)
@@ -359,9 +340,6 @@ class MainWindow(QtGui.QMainWindow):
         QDesktopServices.openUrl(url)
         
     def closeEvent(self, event):
-        if self.UpdateTimer.isActive():
-            self.UpdateTimer.stop()
-            
         acsc.stopBuffer(self.hcomm, 5)
         acsc.closeComm(self.hcomm)
         acsc.unregisterEmergencyStop()
