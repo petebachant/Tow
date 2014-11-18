@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>415</width>
-    <height>466</height>
+    <width>287</width>
+    <height>271</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -36,8 +36,8 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>40</y>
+      <x>30</x>
+      <y>60</y>
       <width>231</width>
       <height>71</height>
      </rect>
@@ -122,24 +122,13 @@
      </widget>
     </widget>
    </widget>
-   <widget class="QDockWidget" name="dockWidget">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>0</y>
-      <width>251</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <widget class="QWidget" name="dockWidgetContents_3"/>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>415</width>
+     <width>287</width>
      <height>21</height>
     </rect>
    </property>
@@ -187,13 +176,7 @@
     </property>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuView">
-    <property name="title">
-     <string>View</string>
-    </property>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuView"/>
    <addaction name="menuHoming"/>
    <addaction name="menuOptions"/>
    <addaction name="menuAbout"/>
