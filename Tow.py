@@ -89,7 +89,7 @@ class MainWindow(QtGui.QMainWindow):
             msgtxt += "SPiiPlus User Mode Driver is running."
             c_err_box = QMessageBox()
             c_err_box.setIcon(QMessageBox.Critical)
-            c_err_box.setWindowIcon(QIcon(':/icons/tow_icon2.png'))
+            c_err_box.setWindowIcon(QIcon(':/icons/tow_icon.svg'))
             c_err_box.setWindowTitle("Connection Error")
             c_err_box.setText(msgtxt)
             c_err_box.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort)

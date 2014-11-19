@@ -24,7 +24,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="icons/tow_resources.qrc">
-    <normaloff>:/icons/tow_icon2.png</normaloff>:/icons/tow_icon2.png</iconset>
+    <normaloff>:/icons/tow_icon.svg</normaloff>:/icons/tow_icon.svg</iconset>
   </property>
   <property name="animated">
    <bool>true</bool>
