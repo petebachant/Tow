@@ -153,7 +153,22 @@
      <addaction name="traverse4m"/>
      <addaction name="traverseCustom"/>
     </widget>
+    <widget class="QMenu" name="menuTwitter">
+     <property name="title">
+      <string>Twitter</string>
+     </property>
+     <widget class="QMenu" name="menuAutomatic_Tweeting">
+      <property name="title">
+       <string>Automatic Tweeting</string>
+      </property>
+      <addaction name="actionOn_PTP_Move"/>
+      <addaction name="actionOn_Jogging"/>
+      <addaction name="actionOn_Enable"/>
+     </widget>
+     <addaction name="menuAutomatic_Tweeting"/>
+    </widget>
     <addaction name="menuTraverse_Offset"/>
+    <addaction name="menuTwitter"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -792,6 +807,21 @@
    </property>
    <property name="toolTip">
     <string>Jog Pendant</string>
+   </property>
+  </action>
+  <action name="actionOn_Enable">
+   <property name="text">
+    <string>On Enable</string>
+   </property>
+  </action>
+  <action name="actionOn_PTP_Move">
+   <property name="text">
+    <string>On PTP Move</string>
+   </property>
+  </action>
+  <action name="actionOn_Jogging">
+   <property name="text">
+    <string>On Jogging</string>
    </property>
   </action>
  </widget>
