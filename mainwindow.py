@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Wed Nov 19 10:02:19 2014
+# Created: Wed Nov 19 10:07:01 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -363,7 +363,7 @@ class Ui_MainWindow(object):
         self.traverse2m.setText(_translate("MainWindow", "2 m", None))
         self.traverse3m.setText(_translate("MainWindow", "3 m", None))
         self.traverse4m.setText(_translate("MainWindow", "4 m", None))
-        self.actionWiki.setText(_translate("MainWindow", "Tow Tank Wiki", None))
+        self.actionWiki.setText(_translate("MainWindow", "Wiki", None))
         self.actionWiki.setShortcut(_translate("MainWindow", "F1", None))
         self.actionAbout.setText(_translate("MainWindow", "About", None))
         self.traverseCustom.setText(_translate("MainWindow", "Custom", None))

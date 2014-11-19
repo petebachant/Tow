@@ -662,7 +662,7 @@
   </action>
   <action name="actionWiki">
    <property name="text">
-    <string>Tow Tank Wiki</string>
+    <string>Wiki</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
