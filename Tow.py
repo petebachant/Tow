@@ -111,7 +111,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.hcomm = acsc.openCommDirect()
             
         if self.hcomm != acsc.INVALID:
-            self.timer_slow.start(200)
+            self.timer_slow.start(150)
             self.timer_fast.start(50)
             self.ui.enableAxis.setEnabled(True)
             self.ui.actionRunHoming.setEnabled(True)
@@ -336,7 +336,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.posSpinBox.setMinimum(-self.leftlimit)
         
     def on_wiki(self):
-        url = QUrl("http://unhtowtank.wikispaces.com/Towing")
+        url = QUrl("https://marine.unh.edu/oelab/wiki/doku.php?id=tow_tank:operation:tow_system#simple_carriage_motionusing_tow")
         QDesktopServices.openUrl(url)
         
     def closeEvent(self, event):
