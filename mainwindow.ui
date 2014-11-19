@@ -153,22 +153,16 @@
      <addaction name="traverse4m"/>
      <addaction name="traverseCustom"/>
     </widget>
-    <widget class="QMenu" name="menuTwitter">
+    <widget class="QMenu" name="menuAutomatic_Tweet">
      <property name="title">
-      <string>Twitter</string>
+      <string>Automatic Tweeting</string>
      </property>
-     <widget class="QMenu" name="menuAutomatic_Tweeting">
-      <property name="title">
-       <string>Automatic Tweeting</string>
-      </property>
-      <addaction name="actionOn_PTP_Move"/>
-      <addaction name="actionOn_Jogging"/>
-      <addaction name="actionOn_Enable"/>
-     </widget>
-     <addaction name="menuAutomatic_Tweeting"/>
+     <addaction name="actionTweet_On_PTP"/>
+     <addaction name="actionTweet_On_Jog"/>
+     <addaction name="actionTweet_On_Enable_Disable"/>
     </widget>
     <addaction name="menuTraverse_Offset"/>
-    <addaction name="menuTwitter"/>
+    <addaction name="menuAutomatic_Tweet"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
@@ -809,19 +803,28 @@
     <string>Jog Pendant</string>
    </property>
   </action>
-  <action name="actionOn_Enable">
+  <action name="actionTweet_On_PTP">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>On Enable</string>
+    <string>On PTP</string>
    </property>
   </action>
-  <action name="actionOn_PTP_Move">
+  <action name="actionTweet_On_Jog">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>On PTP Move</string>
+    <string>On Jog</string>
    </property>
   </action>
-  <action name="actionOn_Jogging">
+  <action name="actionTweet_On_Enable_Disable">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>On Jogging</string>
+    <string>On Enable/Disable</string>
    </property>
   </action>
  </widget>

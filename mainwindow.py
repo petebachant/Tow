@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Tue Nov 18 12:33:49 2014
+# Created: Wed Nov 19 10:02:19 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -78,6 +78,8 @@ class Ui_MainWindow(object):
         self.menuTraverse_Offset.setContextMenuPolicy(QtCore.Qt.PreventContextMenu)
         self.menuTraverse_Offset.setAcceptDrops(True)
         self.menuTraverse_Offset.setObjectName(_fromUtf8("menuTraverse_Offset"))
+        self.menuAutomatic_Tweet = QtGui.QMenu(self.menuOptions)
+        self.menuAutomatic_Tweet.setObjectName(_fromUtf8("menuAutomatic_Tweet"))
         self.menuAbout = QtGui.QMenu(self.menuBar)
         self.menuAbout.setObjectName(_fromUtf8("menuAbout"))
         self.menuHoming = QtGui.QMenu(self.menuBar)
@@ -276,13 +278,26 @@ class Ui_MainWindow(object):
         icon9.addPixmap(QtGui.QPixmap(_fromUtf8(":/icons/yellow_power.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionJogPendant.setIcon(icon9)
         self.actionJogPendant.setObjectName(_fromUtf8("actionJogPendant"))
+        self.actionTweet_On_PTP = QtGui.QAction(MainWindow)
+        self.actionTweet_On_PTP.setCheckable(True)
+        self.actionTweet_On_PTP.setObjectName(_fromUtf8("actionTweet_On_PTP"))
+        self.actionTweet_On_Jog = QtGui.QAction(MainWindow)
+        self.actionTweet_On_Jog.setCheckable(True)
+        self.actionTweet_On_Jog.setObjectName(_fromUtf8("actionTweet_On_Jog"))
+        self.actionTweet_On_Enable_Disable = QtGui.QAction(MainWindow)
+        self.actionTweet_On_Enable_Disable.setCheckable(True)
+        self.actionTweet_On_Enable_Disable.setObjectName(_fromUtf8("actionTweet_On_Enable_Disable"))
         self.menuTraverse_Offset.addAction(self.traverseOff)
         self.menuTraverse_Offset.addAction(self.traverse1m)
         self.menuTraverse_Offset.addAction(self.traverse2m)
         self.menuTraverse_Offset.addAction(self.traverse3m)
         self.menuTraverse_Offset.addAction(self.traverse4m)
         self.menuTraverse_Offset.addAction(self.traverseCustom)
+        self.menuAutomatic_Tweet.addAction(self.actionTweet_On_PTP)
+        self.menuAutomatic_Tweet.addAction(self.actionTweet_On_Jog)
+        self.menuAutomatic_Tweet.addAction(self.actionTweet_On_Enable_Disable)
         self.menuOptions.addAction(self.menuTraverse_Offset.menuAction())
+        self.menuOptions.addAction(self.menuAutomatic_Tweet.menuAction())
         self.menuAbout.addAction(self.actionWiki)
         self.menuAbout.addSeparator()
         self.menuAbout.addAction(self.actionAbout)
@@ -321,6 +336,7 @@ class Ui_MainWindow(object):
         self.pbJogMinus.setToolTip(_translate("MainWindow", "Jog Right", None))
         self.menuOptions.setTitle(_translate("MainWindow", "Settings", None))
         self.menuTraverse_Offset.setTitle(_translate("MainWindow", "Traverse Offset", None))
+        self.menuAutomatic_Tweet.setTitle(_translate("MainWindow", "Automatic Tweeting", None))
         self.menuAbout.setTitle(_translate("MainWindow", "Help", None))
         self.menuHoming.setTitle(_translate("MainWindow", "Homing", None))
         self.menuFile.setTitle(_translate("MainWindow", "File", None))
@@ -368,5 +384,8 @@ class Ui_MainWindow(object):
         self.actionHalt.setShortcut(_translate("MainWindow", "Ctrl+Backspace", None))
         self.actionJogPendant.setText(_translate("MainWindow", " Pendant", None))
         self.actionJogPendant.setToolTip(_translate("MainWindow", "Jog Pendant", None))
+        self.actionTweet_On_PTP.setText(_translate("MainWindow", "On PTP", None))
+        self.actionTweet_On_Jog.setText(_translate("MainWindow", "On Jog", None))
+        self.actionTweet_On_Enable_Disable.setText(_translate("MainWindow", "On Enable/Disable", None))
 
 import tow_resources_rc
