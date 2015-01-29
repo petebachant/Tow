@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Apr 23 00:19:40 2013
-
-To create interface, run "buildgui.bat" from command prompt
-
-To build and run executable, run "buildrun.bat" from command prompt 
-
-@author: Pete
+To create interface, run `makeui.bat`.
 
 """
 
