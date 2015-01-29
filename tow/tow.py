@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-To create interface, run `makeui.bat`.
+To create interface, run `../makeui.bat`.
 
 """
 
@@ -13,6 +13,7 @@ from PyQt4 import QtNetwork
 from mainwindow import *
 import sys
 from acspy import acsc
+from .__init__ import __version__
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -263,9 +264,9 @@ class MainWindow(QtGui.QMainWindow):
         acsc.halt(self.hcomm, self.axis)
         
     def on_actionAbout(self):
-        about_text = QString("<b>Tow 0.1.1</b><br>")
+        about_text = QString("<b>Tow {}</b><br>".format(__version__))
         about_text.append("A simple towing app for the UNH tow tank<br><br>")
-        about_text.append("Built 6.2013 by Pete Bachant<br>")
+        about_text.append("By Pete Bachant<br>")
         about_text.append("petebachant@gmail.com")
         QMessageBox.about(self, "About Tow", about_text)
         
