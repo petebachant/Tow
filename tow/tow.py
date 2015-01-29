@@ -12,6 +12,8 @@ from PyQt4 import QtGui
 from PyQt4 import QtNetwork
 from mainwindow import *
 import sys
+import os
+import json
 from acspy import acsc
 from .__init__ import __version__
 
@@ -21,6 +23,9 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        # Load settings
+        self.load_settings()
         
         # Set up some parameters
         self.axis = 5
@@ -129,8 +134,23 @@ class MainWindow(QtGui.QMainWindow):
         remoteserver = QtNetwork.QTcpServer()
         print(str(remoteserver.serverAddress().toString()))
         
-        # Connect signlals and slots        
+        # Connect signals and slots        
         self.connectslots()
+        
+    def load_settings(self):
+        """
+        Loads settings in JSON format from `~/.towconfig`.
+        """
+        userdir = os.path.expanduser("~")
+        self.settings_fpath = os.path.join(userdir, ".towconfig")
+        try:
+            with open(self.settings_fpath) as f:
+                self.settings = json.load(f)
+        except IOError:
+            self.settings = {}
+        if "Last window location" in self.settings:
+            self.move(QPoint(self.settings["Last window location"][0],
+                             self.settings["Last window location"][1]))
         
     def connectslots(self):        
         # Connect signals to their appropriate slots        
@@ -338,6 +358,10 @@ class MainWindow(QtGui.QMainWindow):
         acsc.stopBuffer(self.hcomm, 5)
         acsc.closeComm(self.hcomm)
         acsc.unregisterEmergencyStop()
+        self.settings["Last window location"] = [self.pos().x(), 
+                                                 self.pos().y()]
+        with open(self.settings_fpath, "w") as f:
+            json.dump(self.settings, f, indent=4)
             
 
 def main():
@@ -347,7 +371,6 @@ def main():
     width = QDesktopWidget().screenGeometry().width()
 
     w = MainWindow()
-    w.move(QPoint(1560.0/1900*width, 420.0/1200*height))
     w.show()
     w.setFixedSize(w.size())
     
