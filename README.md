@@ -25,7 +25,7 @@ This shortcut can be copied wherever you like, pinned to the taskbar, etc.
 
 License
 -------
-Tow Copyright (c) 2013-2014 Peter Bachant
+Tow Copyright (c) 2013-2015 Peter Bachant
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
