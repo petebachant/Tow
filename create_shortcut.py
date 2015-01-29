@@ -17,7 +17,7 @@ icon = os.path.join(python_dir,
                     "site-packages",
                     "tow",
                     "icons",
-                    "tow_icon_rev3.ico")
+                    "tow_icon.ico")
 target_path = '{} {}'.format(pythonw_path, tow_path)
 print target_path
 
