@@ -14,7 +14,7 @@ setup(
     author='Pete Bachant',
     author_email='petebachant@gmail.com',
     packages=['tow'],
-    scripts=['scripts/tow-script.pyw', 'scripts/tow.bat'],
+    scripts=['scripts/tow-script.py', 'scripts/tow.bat'],
     data_files=[('Lib/site-packages/tow/icons', icons)],
     url='https://github.com/petebachant/Tow.git',
     license='LICENSE',

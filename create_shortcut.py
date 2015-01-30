@@ -10,7 +10,7 @@ import sys
 python_dir = os.path.split(sys.executable)[0]
 shortcut_path = "Tow.lnk"
 pythonw_path = os.path.join(python_dir, "pythonw.exe")
-tow_path = os.path.join(python_dir, "Scripts", "tow-script.pyw")
+tow_path = os.path.join(python_dir, "Scripts", "tow-script.py")
 wdir = r"C:\temp"
 icon = os.path.join(python_dir,
                     "Lib",
