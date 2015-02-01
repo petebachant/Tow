@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/petebachant/tow.png?label=ready&title=Ready)](https://waffle.io/petebachant/tow)
 Tow
 ===
 Tow is an app for controlling UNH's tow carriage motion. It accesses functions
