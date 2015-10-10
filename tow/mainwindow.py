@@ -388,4 +388,4 @@ class Ui_MainWindow(object):
         self.actionTweet_On_Jog.setText(_translate("MainWindow", "On Jog", None))
         self.actionTweet_On_Enable_Disable.setText(_translate("MainWindow", "On Enable/Disable", None))
 
-import tow_resources_rc
+from . import tow_resources_rc
