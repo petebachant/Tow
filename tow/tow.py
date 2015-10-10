@@ -10,11 +10,11 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import QtGui
 from PyQt4 import QtNetwork
-try:  
-    from PyQt4.QtCore import QString  
-except ImportError:  
-    # we are using Python3 so QString is not defined  
-    QString = str  
+try:
+    from PyQt4.QtCore import QString
+except ImportError:
+    # we are using Python3 so QString is not defined
+    QString = str
 from .mainwindow import *
 import sys
 import os
@@ -28,10 +28,10 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        
+
         # Load settings
         self.load_settings()
-        
+
         # Set up some parameters
         self.axis = 5
         self.homecounter = 0
@@ -53,8 +53,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.enableAxis.setIcon(QIcon())
         self.ui.posSpinBox.setMinimum(-self.leftlimit)
         self.ui.posSpinBox.setMaximum(self.leftlimit)
-        
-        # Add some labels to the status bar       
+
+        # Add some labels to the status bar
         self.hlabel = QLabel()
         self.hlabel.setText("Not homed ")
         self.ui.statusBar.addWidget(self.hlabel)
@@ -64,7 +64,7 @@ class MainWindow(QtGui.QMainWindow):
         self.vellabel = QLabel()
         self.vellabel.setText("Vel. (m/s): ")
         self.ui.statusBar.addWidget(self.vellabel)
-        
+
         # Add a button to the toolbar
         self.ui.toolBar_Jog.addWidget(self.ui.pbJogPlus)
         self.ui.toolBar_Jog.addWidget(self.ui.pbJogMinus)
@@ -73,7 +73,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pbJogMinus.setFixedWidth(32)
         self.ui.pbJogPlus.setFixedWidth(32)
         self.ui.dock_jog.close()
-        
+
         # Set up timers
         self.timer_slow = QTimer()
         self.timer_slow.timeout.connect(self.on_timer_slow)
@@ -83,11 +83,11 @@ class MainWindow(QtGui.QMainWindow):
         # Connect to the controller
         self.simulator = False
         self.retry = True
-        if self.simulator: 
+        if self.simulator:
             self.hcomm = acsc.openCommDirect()
-        else: 
+        else:
             self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
-        
+
         # If connection fails, bring up error message box
         while self.hcomm == acsc.INVALID and self.retry:
             msgtxt = "Unable to connect to controller.\n\n"
@@ -100,11 +100,11 @@ class MainWindow(QtGui.QMainWindow):
             c_err_box.setText(msgtxt)
             c_err_box.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort)
             c_err_box.setDefaultButton(QMessageBox.Retry)
-            c_err_box.addButton("Use &Simulator", 
+            c_err_box.addButton("Use &Simulator",
                                 QMessageBox.AcceptRole)
 
             ret = c_err_box.exec_()
-            
+
             if ret == QMessageBox.Retry:
                 if self.simulator: self.hcomm = acsc.openCommDirect()
                 else: self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
@@ -115,16 +115,16 @@ class MainWindow(QtGui.QMainWindow):
             elif ret == QMessageBox.AcceptRole:
                 self.simulator = True
                 self.hcomm = acsc.openCommDirect()
-            
+
         if self.hcomm != acsc.INVALID:
             self.timer_slow.start(150)
             self.timer_fast.start(50)
             self.ui.enableAxis.setEnabled(True)
             self.ui.actionRunHoming.setEnabled(True)
-        
-        # Register the emergency stop button            
+
+        # Register the emergency stop button
         acsc.registerEmergencyStop()
-        
+
         # Make sure jog program is not running
         acsc.stopBuffer(self.hcomm, 5)
 
@@ -135,14 +135,14 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.traverse2m.setActionGroup(self.offset_group)
         self.ui.traverse3m.setActionGroup(self.offset_group)
         self.ui.traverse4m.setActionGroup(self.offset_group)
-        
+
         # Create TCP server for remote control
         remoteserver = QtNetwork.QTcpServer()
         print(str(remoteserver.serverAddress().toString()))
-        
-        # Connect signals and slots        
+
+        # Connect signals and slots
         self.connectslots()
-        
+
     def load_settings(self):
         """
         Loads settings in JSON format from `~/.towconfig`.
@@ -157,9 +157,9 @@ class MainWindow(QtGui.QMainWindow):
         if "Last window location" in self.settings:
             self.move(QPoint(self.settings["Last window location"][0],
                              self.settings["Last window location"][1]))
-        
-    def connectslots(self):        
-        # Connect signals to their appropriate slots        
+
+    def connectslots(self):
+        # Connect signals to their appropriate slots
         self.ui.pbGo.clicked.connect(self.on_go)
         self.ui.enableAxis.triggered.connect(self.on_enableAxis_click)
         self.ui.pbJogMinus.pressed.connect(self.on_pbJogMinus_press)
@@ -182,10 +182,10 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.rbRelative.clicked.connect(self.on_rel)
         self.ui.pbHalt_baf.clicked.connect(self.on_halt)
         self.ui.pbGo_baf.clicked.connect(self.on_go_baf)
-        
-    def on_timer_slow(self):                                         
+
+    def on_timer_slow(self):
         self.axis_enabled = acsc.getMotorEnabled(self.hcomm, self.axis)
-                                        
+
         if self.axis_enabled:
             self.ui.enableAxis.setChecked(True)
             self.ui.enableAxis.setText("Disable")
@@ -196,11 +196,11 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.enableAxis.setIcon(QIcon(":icons/checkmark.png"))
             self.jogmode = False
             acsc.stopBuffer(self.hcomm, 5)
-            
+
         if self.simulator == False:
-            self.homecounter = acsc.readInteger(self.hcomm, None, 
+            self.homecounter = acsc.readInteger(self.hcomm, None,
                                                 "homeCounter_tow")
-            
+
     def on_timer_fast(self):
         if self.hcomm == acsc.INVALID:
             self.close()
@@ -208,27 +208,27 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.dock_jog.setEnabled(self.axis_enabled)
         self.ui.pbJogPendant.setEnabled(self.axis_enabled)
         self.ui.toolBar_Jog.setEnabled(self.axis_enabled)
-        
+
         if self.homecounter > 0 or self.override == True:
             self.ui.rbAbsolute.setEnabled(True)
             self.ui.rbAbsolute_baf.setEnabled(True)
             if self.homecounter > 0:
                 self.ui.groupBox_shortcuts.setEnabled(True)
                 self.hlabel.setText("Homed ")
-            
+
         if self.jogmode == True:
             self.ui.pbJogPendant.setChecked(True)
             self.ui.actionJogPendant.setChecked(True)
         else:
             self.ui.pbJogPendant.setChecked(False)
             self.ui.actionJogPendant.setChecked(False)
-        
+
         # Get and display reference position and velocity
         self.rpos = acsc.getRPosition(self.hcomm, self.axis)
         self.rvel = acsc.getRVelocity(self.hcomm, self.axis)
         self.poslabel.setText("Pos. (m): %.3f " % self.rpos)
         self.vellabel.setText("Vel. (m/s): %.2f " % self.rvel)
-        
+
     def on_enableAxis_click(self):
         if not self.axis_enabled:
             self.axis_enabled = True
@@ -238,7 +238,7 @@ class MainWindow(QtGui.QMainWindow):
             self.axis_enabled = False
             acsc.disable(self.hcomm, self.axis, acsc.SYNCHRONOUS)
             self.ui.enableAxis.setText("Enable")
-            
+
     def on_runHoming(self):
         if self.simulator:
             self.homecounter += 1
@@ -248,7 +248,7 @@ class MainWindow(QtGui.QMainWindow):
         self.on_abs()
         self.ui.actionOverride.setEnabled(False)
         self.override = False
-        
+
     def on_go(self):
         target = self.ui.posSpinBox.value()
         vel = self.ui.velSpinBox.value()
@@ -259,10 +259,10 @@ class MainWindow(QtGui.QMainWindow):
         acsc.setJerk(self.hcomm, self.axis, acc*10)
         if self.ui.rbRelative.isChecked() == True:
             flags = acsc.AMF_RELATIVE
-        else: 
+        else:
             flags = None
         acsc.toPoint(self.hcomm, flags, self.axis, target)
-        
+
     def on_go_baf(self):
         """Do a back-and-forth move."""
         p1 = self.ui.posSpinBox_baf1.value()
@@ -276,61 +276,61 @@ class MainWindow(QtGui.QMainWindow):
         else:
             relflag = ""
         txt = "GLOBAL INT move\n"
-        txt += "JERK(tow) = 1\n"
+        txt += "JERK({}) = 1\n".format(self.axis)
         txt += "move = 1\n"
         txt += "WHILE move\n"
-        txt += "    ACC(tow) = {}\n".format(a1)
-        txt += "    DEC(tow) = {}\n".format(a1)
-        txt += "    VEL(tow) = {}\n".format(v1)
-        txt += "    ptp/e{} tow, {}\n".format(relflag, p1)
-        txt += "    ACC(tow) = {}\n".format(a2)
-        txt += "    DEC(tow) = {}\n".format(a2)
-        txt += "    VEL(tow) = {}\n".format(v2)
-        txt += "    ptp/e{} tow, {}\n".format(relflag, p2)
+        txt += "    ACC({}) = {}\n".format(self.axis, a1)
+        txt += "    DEC({}) = {}\n".format(self.axis, a1)
+        txt += "    VEL({}) = {}\n".format(self.axis, v1)
+        txt += "    ptp/e{} {}, {}\n".format(relflag, self.axis, p1)
+        txt += "    ACC({}) = {}\n".format(self.axis, a2)
+        txt += "    DEC({}) = {}\n".format(self.axis, a2)
+        txt += "    VEL({}) = {}\n".format(self.axis, v2)
+        txt += "    ptp/e{} {}, {}\n".format(relflag, self.axis, p2)
         if not self.ui.checkBox_loop.isChecked():
             txt += "    move = 0\n"
         txt += "END\n"
         txt += "STOP\n"
         acsc.loadBuffer(self.hcomm, 19, txt, 512)
         acsc.runBuffer(self.hcomm, 19)
-      
+
     def on_pbJogMinus_press(self):
         acsc.setAcceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
         acsc.setDeceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
         acsc.setJerk(self.hcomm, self.axis, 2, acsc.SYNCHRONOUS)
         acsc.jog(self.hcomm, acsc.AMF_VELOCITY, self.axis, -0.2)
-        
+
     def on_pbJogMinus_release(self):
         acsc.halt(self.hcomm, self.axis)
-        
+
     def on_pbJogPlus_press(self):
         acsc.setAcceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
         acsc.setDeceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
         acsc.setJerk(self.hcomm, self.axis, 2, acsc.SYNCHRONOUS)
         acsc.jog(self.hcomm, acsc.AMF_VELOCITY, self.axis, 0.2)
-        
+
     def on_pbJogPlus_release(self):
         acsc.halt(self.hcomm, self.axis)
-        
+
     def on_JogPendant(self):
         if self.jogmode == False:
             self.jogmode = True
-            acsc.runBuffer(self.hcomm, 5, None)            
+            acsc.runBuffer(self.hcomm, 5, None)
         elif self.jogmode == True:
             acsc.stopBuffer(self.hcomm, 5)
             self.jogmode = False
-        
+
     def on_halt(self):
         acsc.stopBuffer(self.hcomm, 19)
         acsc.halt(self.hcomm, self.axis)
-        
+
     def on_actionAbout(self):
         about_text = QString("<b>Tow {}</b><br>".format(__version__))
         about_text.append("A simple towing app for the UNH tow tank<br><br>")
         about_text.append("By Pete Bachant<br>")
         about_text.append("petebachant@gmail.com")
         QMessageBox.about(self, "About Tow", about_text)
-        
+
     def on_traverseChange(self):
         if self.ui.traverseOff.isChecked():
             self.leftlimit = 26.2
@@ -352,7 +352,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.ui.rbRelative.isChecked():
             self.ui.posSpinBox.setMinimum(-self.leftlimit)
         self.ui.posSpinBox.setMaximum(self.leftlimit)
-            
+
     def on_goLeftLimit(self):
         vel = self.ui.velSpinBox.value()
         acc = self.ui.accSpinBox.value()
@@ -361,7 +361,7 @@ class MainWindow(QtGui.QMainWindow):
         acsc.setDeceleration(self.hcomm, self.axis, acc)
         acsc.setJerk(self.hcomm, self.axis, acc*10)
         acsc.toPoint(self.hcomm, None, self.axis, self.leftlimit)
-        
+
     def on_goRightLimit(self):
         vel = self.ui.velSpinBox.value()
         acc = self.ui.accSpinBox.value()
@@ -370,7 +370,7 @@ class MainWindow(QtGui.QMainWindow):
         acsc.setDeceleration(self.hcomm, self.axis, acc)
         acsc.setJerk(self.hcomm, self.axis, acc*10)
         acsc.toPoint(self.hcomm, None, self.axis, 0.0)
-        
+
     def on_goPlatform(self):
         vel = self.ui.velSpinBox.value()
         acc = self.ui.accSpinBox.value()
@@ -379,7 +379,7 @@ class MainWindow(QtGui.QMainWindow):
         acsc.setDeceleration(self.hcomm, self.axis, acc)
         acsc.setJerk(self.hcomm, self.axis, acc*10)
         acsc.toPoint(self.hcomm, None, self.axis, self.platform)
-        
+
     def on_override(self):
         self.override = True
         self.ui.rbAbsolute.setChecked(True)
@@ -387,27 +387,27 @@ class MainWindow(QtGui.QMainWindow):
     def on_abs(self):
         if not self.override:
             self.ui.posSpinBox.setMinimum(0.0)
-            
+
     def on_rel(self):
         self.ui.posSpinBox.setMinimum(-self.leftlimit)
-        
+
     def on_wiki(self):
         url = QUrl("https://marine.unh.edu/oelab/wiki/doku.php?id=tow_tank:"
                    "operation:tow_system#simple_carriage_motionusing_tow")
         QDesktopServices.openUrl(url)
-        
+
     def closeEvent(self, event):
         acsc.stopBuffer(self.hcomm, 5)
         acsc.closeComm(self.hcomm)
         acsc.unregisterEmergencyStop()
-        self.settings["Last window location"] = [self.pos().x(), 
+        self.settings["Last window location"] = [self.pos().x(),
                                                  self.pos().y()]
         with open(self.settings_fpath, "w") as f:
             json.dump(self.settings, f, indent=4)
-            
+
 
 def main():
-    
+
     app = QtGui.QApplication(sys.argv)
     height = QDesktopWidget().screenGeometry().height()
     width = QDesktopWidget().screenGeometry().width()
@@ -415,9 +415,9 @@ def main():
     w = MainWindow()
     w.show()
     w.setFixedSize(w.size())
-    
+
     sys.exit(app.exec_())
-    
+
 
 if __name__ == '__main__':
     main()
