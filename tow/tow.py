@@ -40,6 +40,11 @@ class MainWindow(QtGui.QMainWindow):
         self.platform = 9.0
         self.override = False
         self.axis_enabled = False
+        
+        # Set maximum velocities to 2 m/s
+        self.ui.velSpinBox.setMaximum(2.0)
+        self.ui.velSpinBox_baf1.setMaximum(2.0)
+        self.ui.velSpinBox_baf2.setMaximum(2.0)
 
         # Set initial states of all buttons
         self.ui.rbAbsolute.setEnabled(False)
@@ -53,6 +58,11 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.enableAxis.setIcon(QIcon())
         self.ui.posSpinBox.setMinimum(-self.leftlimit)
         self.ui.posSpinBox.setMaximum(self.leftlimit)
+        self.ui.posSpinBox_baf1.setMinimum(-self.leftlimit)
+        self.ui.posSpinBox_baf1.setMaximum(self.leftlimit)
+        self.ui.posSpinBox_baf2.setMinimum(-self.leftlimit)
+        self.ui.posSpinBox_baf2.setMaximum(self.leftlimit)
+        self.ui.posSpinBox_baf2.setDisabled(True)
 
         # Add some labels to the status bar
         self.hlabel = QLabel()
@@ -179,7 +189,9 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pbGoRightLimit.clicked.connect(self.on_goRightLimit)
         self.ui.pbGoPlatform.clicked.connect(self.on_goPlatform)
         self.ui.rbAbsolute.clicked.connect(self.on_abs)
+        self.ui.rbAbsolute_baf.clicked.connect(self.on_abs)
         self.ui.rbRelative.clicked.connect(self.on_rel)
+        self.ui.rbRelative_baf.clicked.connect(self.on_rel)
         self.ui.pbHalt_baf.clicked.connect(self.on_halt)
         self.ui.pbGo_baf.clicked.connect(self.on_go_baf)
 
@@ -245,6 +257,7 @@ class MainWindow(QtGui.QMainWindow):
         else:
             acsc.runBuffer(self.hcomm, 2, None)
         self.ui.rbAbsolute.setChecked(True)
+        self.ui.rbAbsolute_baf.setChecked(True)
         self.on_abs()
         self.ui.actionOverride.setEnabled(False)
         self.override = False
@@ -266,15 +279,16 @@ class MainWindow(QtGui.QMainWindow):
     def on_go_baf(self):
         """Do a back-and-forth move."""
         p1 = self.ui.posSpinBox_baf1.value()
-        p2 = self.ui.posSpinBox_baf2.value()
         v1 = self.ui.velSpinBox_baf1.value()
         v2 = self.ui.velSpinBox_baf2.value()
         a1 = self.ui.accSpinBox_baf1.value()
         a2 = self.ui.accSpinBox_baf2.value()
         if self.ui.rbRelative_baf.isChecked():
             relflag = "r"
+            p2 = -p1
         else:
             relflag = ""
+            p2 = self.ui.posSpinBox_baf2.value()
         txt = "GLOBAL INT move\n"
         txt += "JERK({}) = 1\n".format(self.axis)
         txt += "move = 1\n"
@@ -321,6 +335,7 @@ class MainWindow(QtGui.QMainWindow):
             self.jogmode = False
 
     def on_halt(self):
+        acsc.writeInteger(self.hcomm, "move", 0)
         acsc.stopBuffer(self.hcomm, 19)
         acsc.halt(self.hcomm, self.axis)
 
@@ -383,13 +398,20 @@ class MainWindow(QtGui.QMainWindow):
     def on_override(self):
         self.override = True
         self.ui.rbAbsolute.setChecked(True)
+        self.ui.rbAbsolute_baf.setChecked(True)
+        self.on_abs()
 
     def on_abs(self):
         if not self.override:
             self.ui.posSpinBox.setMinimum(0.0)
+            self.ui.posSpinBox_baf1.setMinimum(0.0)
+            self.ui.posSpinBox_baf2.setMinimum(0.0)
+        self.ui.posSpinBox_baf2.setEnabled(True)
 
     def on_rel(self):
         self.ui.posSpinBox.setMinimum(-self.leftlimit)
+        self.ui.posSpinBox_baf1.setMinimum(-self.leftlimit)
+        self.ui.posSpinBox_baf2.setDisabled(True)
 
     def on_wiki(self):
         url = QUrl("https://marine.unh.edu/oelab/wiki/doku.php?id=tow_tank:"
