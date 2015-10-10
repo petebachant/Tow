@@ -10,7 +10,12 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import QtGui
 from PyQt4 import QtNetwork
-from tow.mainwindow import *
+try:  
+    from PyQt4.QtCore import QString  
+except ImportError:  
+    # we are using Python3 so QString is not defined  
+    QString = str  
+from .mainwindow import *
 import sys
 import os
 import json
@@ -38,6 +43,7 @@ class MainWindow(QtGui.QMainWindow):
 
         # Set initial states of all buttons
         self.ui.rbAbsolute.setEnabled(False)
+        self.ui.rbAbsolute_baf.setEnabled(False)
         self.ui.enableAxis.setEnabled(False)
         self.ui.actionRunHoming.setEnabled(False)
         self.ui.dock_jog.setEnabled(False)
@@ -174,6 +180,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pbGoPlatform.clicked.connect(self.on_goPlatform)
         self.ui.rbAbsolute.clicked.connect(self.on_abs)
         self.ui.rbRelative.clicked.connect(self.on_rel)
+        self.ui.pbHalt_baf.clicked.connect(self.on_halt)
+        self.ui.pbGo_baf.clicked.connect(self.on_go_baf)
         
     def on_timer_slow(self):                                         
         self.axis_enabled = acsc.getMotorEnabled(self.hcomm, self.axis)
@@ -203,6 +211,7 @@ class MainWindow(QtGui.QMainWindow):
         
         if self.homecounter > 0 or self.override == True:
             self.ui.rbAbsolute.setEnabled(True)
+            self.ui.rbAbsolute_baf.setEnabled(True)
             if self.homecounter > 0:
                 self.ui.groupBox_shortcuts.setEnabled(True)
                 self.hlabel.setText("Homed ")
@@ -253,6 +262,37 @@ class MainWindow(QtGui.QMainWindow):
         else: 
             flags = None
         acsc.toPoint(self.hcomm, flags, self.axis, target)
+        
+    def on_go_baf(self):
+        """Do a back-and-forth move."""
+        p1 = self.ui.posSpinBox_baf1.value()
+        p2 = self.ui.posSpinBox_baf2.value()
+        v1 = self.ui.velSpinBox_baf1.value()
+        v2 = self.ui.velSpinBox_baf2.value()
+        a1 = self.ui.accSpinBox_baf1.value()
+        a2 = self.ui.accSpinBox_baf2.value()
+        if self.ui.rbRelative_baf.isChecked():
+            relflag = "r"
+        else:
+            relflag = ""
+        txt = "GLOBAL INT move\n"
+        txt += "JERK(tow) = 1\n"
+        txt += "move = 1\n"
+        txt += "WHILE move\n"
+        txt += "    ACC(tow) = {}\n".format(a1)
+        txt += "    DEC(tow) = {}\n".format(a1)
+        txt += "    VEL(tow) = {}\n".format(v1)
+        txt += "    ptp/e{} tow, {}\n".format(relflag, p1)
+        txt += "    ACC(tow) = {}\n".format(a2)
+        txt += "    DEC(tow) = {}\n".format(a2)
+        txt += "    VEL(tow) = {}\n".format(v2)
+        txt += "    ptp/e{} tow, {}\n".format(relflag, p2)
+        if not self.ui.checkBox_loop.isChecked():
+            txt += "    move = 0\n"
+        txt += "END\n"
+        txt += "STOP\n"
+        acsc.loadBuffer(self.hcomm, 19, txt, 512)
+        acsc.runBuffer(self.hcomm, 19)
       
     def on_pbJogMinus_press(self):
         acsc.setAcceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
@@ -281,6 +321,7 @@ class MainWindow(QtGui.QMainWindow):
             self.jogmode = False
         
     def on_halt(self):
+        acsc.stopBuffer(self.hcomm, 19)
         acsc.halt(self.hcomm, self.axis)
         
     def on_actionAbout(self):
