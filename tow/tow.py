@@ -351,7 +351,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.posSpinBox.setMinimum(-self.leftlimit)
         
     def on_wiki(self):
-        url = QUrl("https://marine.unh.edu/oelab/wiki/doku.php?id=tow_tank:operation:tow_system#simple_carriage_motionusing_tow")
+        url = QUrl("https://marine.unh.edu/oelab/wiki/doku.php?id=tow_tank:"
+                   "operation:tow_system#simple_carriage_motionusing_tow")
         QDesktopServices.openUrl(url)
         
     def closeEvent(self, event):
