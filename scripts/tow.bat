@@ -1,2 +1,2 @@
 @echo off
-start pythonw "%~f0\..\tow-script.py"
+start pythonw "%~f0\..\tow-script.py" %*
