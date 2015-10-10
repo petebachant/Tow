@@ -42,7 +42,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.actionRunHoming.setEnabled(False)
         self.ui.dock_jog.setEnabled(False)
         self.ui.groupBox_shortcuts.setEnabled(False)
-        self.ui.dock_ptp.setEnabled(False)
+        self.ui.tabWidgetMode.setEnabled(False)
         self.ui.toolBar_Jog.setEnabled(False)
         self.ui.enableAxis.setIcon(QIcon())
         self.ui.posSpinBox.setMinimum(-self.leftlimit)
@@ -196,7 +196,7 @@ class MainWindow(QtGui.QMainWindow):
     def on_timer_fast(self):
         if self.hcomm == acsc.INVALID:
             self.close()
-        self.ui.dock_ptp.setEnabled(self.axis_enabled)
+        self.ui.tabWidgetMode.setEnabled(self.axis_enabled)
         self.ui.dock_jog.setEnabled(self.axis_enabled)
         self.ui.pbJogPendant.setEnabled(self.axis_enabled)
         self.ui.toolBar_Jog.setEnabled(self.axis_enabled)
