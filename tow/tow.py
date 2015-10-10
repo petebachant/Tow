@@ -29,9 +29,6 @@ class MainWindow(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        # Load settings
-        self.load_settings()
-
         # Set up some parameters
         self.axis = 5
         self.homecounter = 0
@@ -145,6 +142,11 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.traverse2m.setActionGroup(self.offset_group)
         self.ui.traverse3m.setActionGroup(self.offset_group)
         self.ui.traverse4m.setActionGroup(self.offset_group)
+        self.traverse_offset_actions = {"off": self.ui.traverseOff,
+                                        "1m": self.ui.traverse1m,
+                                        "2m": self.ui.traverse2m,
+                                        "3m": self.ui.traverse3m,
+                                        "4m": self.ui.traverse4m}
 
         # Create TCP server for remote control
         remoteserver = QtNetwork.QTcpServer()
@@ -152,6 +154,9 @@ class MainWindow(QtGui.QMainWindow):
 
         # Connect signals and slots
         self.connectslots()
+        
+        # Load settings
+        self.load_settings()
 
     def load_settings(self):
         """
@@ -167,6 +172,30 @@ class MainWindow(QtGui.QMainWindow):
         if "Last window location" in self.settings:
             self.move(QPoint(self.settings["Last window location"][0],
                              self.settings["Last window location"][1]))
+        if "Mode index" in self.settings:
+            self.ui.tabWidgetMode.setCurrentIndex(self.settings["Mode index"])
+        if "Traverse offset" in self.settings:
+            offset = self.settings["Traverse offset"]
+            self.traverse_offset_actions[offset].trigger()
+        if "Back-and-forth" in self.settings:
+            s = self.settings["Back-and-forth"]
+            if "absolute" in s:
+                if self.ui.rbAbsolute_baf.isEnabled():
+                    self.ui.rbAbsolute_baf.setChecked(s["absolute"])
+            if "p1" in s:
+                self.ui.posSpinBox_baf1.setValue(s["p1"])
+            if "p2" in s:
+                self.ui.posSpinBox_baf2.setValue(s["p2"])
+            if "v1" in s:
+                self.ui.velSpinBox_baf1.setValue(s["v1"])
+            if "v2" in s:
+                self.ui.velSpinBox_baf2.setValue(s["v2"])
+            if "a1" in s:
+                self.ui.accSpinBox_baf1.setValue(s["a1"])
+            if "a2" in s:
+                self.ui.accSpinBox_baf2.setValue(s["a2"])
+            if "loop" in s:
+                self.ui.checkBox_loop.setChecked(s["loop"])
 
     def connectslots(self):
         # Connect signals to their appropriate slots
@@ -367,6 +396,9 @@ class MainWindow(QtGui.QMainWindow):
         if self.ui.rbRelative.isChecked():
             self.ui.posSpinBox.setMinimum(-self.leftlimit)
         self.ui.posSpinBox.setMaximum(self.leftlimit)
+        if self.ui.rbRelative_baf.isChecked():
+            self.ui.posSpinBox_baf1.setMinimum(-self.leftlimit)
+        self.ui.posSpinBox_baf1.setMaximum(self.leftlimit)
 
     def on_goLeftLimit(self):
         vel = self.ui.velSpinBox.value()
@@ -424,6 +456,20 @@ class MainWindow(QtGui.QMainWindow):
         acsc.unregisterEmergencyStop()
         self.settings["Last window location"] = [self.pos().x(),
                                                  self.pos().y()]
+        self.settings["Mode index"] = self.ui.tabWidgetMode.currentIndex()
+        for key, val in self.traverse_offset_actions.items():
+            if val.isChecked():
+                offset = key
+        self.settings["Traverse offset"] = offset
+        self.settings["Back-and-forth"] = {
+            "absolute": self.ui.rbAbsolute_baf.isChecked(),
+            "p1": self.ui.posSpinBox_baf1.value(),
+            "p2": self.ui.posSpinBox_baf2.value(),
+            "v1": self.ui.velSpinBox_baf1.value(),
+            "v2": self.ui.velSpinBox_baf2.value(),
+            "a1": self.ui.accSpinBox_baf1.value(),
+            "a2": self.ui.accSpinBox_baf2.value(),
+            "loop": self.ui.checkBox_loop.isChecked()}
         with open(self.settings_fpath, "w") as f:
             json.dump(self.settings, f, indent=4)
 
