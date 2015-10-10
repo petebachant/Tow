@@ -177,6 +177,17 @@ class MainWindow(QtGui.QMainWindow):
         if "Traverse offset" in self.settings:
             offset = self.settings["Traverse offset"]
             self.traverse_offset_actions[offset].trigger()
+        if "Point-to-point" in self.settings:
+            s = self.settings["Point-to-point"]
+            if "absolute" in s:
+                if self.ui.rbAbsolute.isEnabled():
+                    self.ui.rbAbsolute.setChecked(s["absolute"])
+            if "pos" in s:
+                self.ui.posSpinBox.setValue(s["pos"])
+            if "vel" in s:
+                self.ui.velSpinBox.setValue(s["vel"])
+            if "acc" in s:
+                self.ui.accSpinBox.setValue(s["acc"])
         if "Back-and-forth" in self.settings:
             s = self.settings["Back-and-forth"]
             if "absolute" in s:
@@ -461,6 +472,11 @@ class MainWindow(QtGui.QMainWindow):
             if val.isChecked():
                 offset = key
         self.settings["Traverse offset"] = offset
+        self.settings["Point-to-point"] = {
+            "absolute": self.ui.rbAbsolute.isChecked(),
+            "pos": self.ui.posSpinBox.value(),
+            "vel": self.ui.velSpinBox.value(),
+            "acc": self.ui.accSpinBox.value()}
         self.settings["Back-and-forth"] = {
             "absolute": self.ui.rbAbsolute_baf.isChecked(),
             "p1": self.ui.posSpinBox_baf1.value(),
