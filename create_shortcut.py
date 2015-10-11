@@ -1,8 +1,8 @@
 """
 This script creates Windows shortcuts.
-
 """
 
+from __future__ import print_function
 import os
 from win32com.client import Dispatch
 import sys
@@ -19,7 +19,7 @@ icon = os.path.join(python_dir,
                     "icons",
                     "tow_icon.ico")
 target_path = '{} {}'.format(pythonw_path, tow_path)
-print target_path
+print(target_path)
 
 shell = Dispatch("WScript.shell")
 shortcut = shell.CreateShortCut(shortcut_path)
