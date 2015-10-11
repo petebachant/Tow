@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from distutils.core import setup
 import os
 from tow import __version__
 
