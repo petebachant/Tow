@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-To create interface, run `../makeui.bat`.
-
-"""
+"""To create interface, run `../makeui.sh`."""
 
 from __future__ import division, print_function
 
@@ -37,7 +34,7 @@ class MainWindow(QtGui.QMainWindow):
         self.platform = 9.0
         self.override = False
         self.axis_enabled = False
-        
+
         # Set maximum velocities to 2 m/s
         self.ui.velSpinBox.setMaximum(2.0)
         self.ui.velSpinBox_baf1.setMaximum(2.0)
@@ -154,7 +151,7 @@ class MainWindow(QtGui.QMainWindow):
 
         # Connect signals and slots
         self.connectslots()
-        
+
         # Load settings
         self.load_settings()
 
