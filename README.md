@@ -1,16 +1,21 @@
-[![Stories in Ready](https://badge.waffle.io/petebachant/tow.png?label=ready&title=Ready)](https://waffle.io/petebachant/tow)
 Tow
 ===
+
+[![Stories in Ready](https://badge.waffle.io/petebachant/tow.png?label=ready&title=Ready)](https://waffle.io/petebachant/tow)
+
 Tow is an app for controlling UNH's tow carriage motion. It accesses functions
 in the ACS Motion Control C library through a wrapper module called `acsc`,
 which is part of the [ACSpy](https://github.com/petebachant/ACSpy) package.
 
+
 Dependencies
------------
+------------
+
   * Python 2.7
   * PyQt4
   * [ACSpy](https://github.com/petebachant/ACSpy) (available via `pip install acspy`)
   * ACS motion control C library (must be obtained from ACS Motion Control)
+
 
 Installing
 ----------
@@ -24,9 +29,11 @@ If you'd like to create a shortcut, run
 
 This shortcut can be copied wherever you like, pinned to the taskbar, etc.
 
+
 License
 -------
-Tow Copyright (c) 2013-2015 Peter Bachant
+
+Tow copyright (c) 2013-2015 Peter Bachant
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
