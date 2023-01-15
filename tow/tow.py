@@ -8,14 +8,15 @@ from acspy import acsc
 from PyQt5 import QtGui, QtNetwork
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 from .__init__ import __version__
 from .mainwindow import *
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self, parent=None):
-        QtGui.QMainWindow.__init__(self)
+        QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
@@ -495,15 +496,12 @@ class MainWindow(QtGui.QMainWindow):
 
 
 def main():
-
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     height = QDesktopWidget().screenGeometry().height()
     width = QDesktopWidget().screenGeometry().width()
-
     w = MainWindow()
     w.show()
     w.setFixedSize(w.size())
-
     sys.exit(app.exec_())
 
 
