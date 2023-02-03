@@ -83,46 +83,43 @@ class MainWindow(QMainWindow):
         # Connect to the controller
         self.simulator = False
         self.retry = True
-        if self.simulator:
-            self.hcomm = acsc.openCommDirect()
-        else:
-            while self.retry:
-                try:
+        self.hcomm = acsc.INVALID
+        while self.retry and self.hcomm == acsc.INVALID:
+            try:
+                if self.simulator:
+                    self.hcomm = acsc.openCommDirect()
+                else:
                     self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
-                except acsc.AcscError:
-                    self.hcomm = acsc.INVALID
-                    # If connection fails, bring up error message box
-                    msgtxt = "Unable to connect to controller.\n\n"
-                    msgtxt += "Check that controller is powered-on and "
-                    msgtxt += "SPiiPlus User Mode Driver is running."
-                    c_err_box = QMessageBox()
-                    c_err_box.setIcon(QMessageBox.Critical)
-                    c_err_box.setWindowIcon(QIcon(":/icons/tow_icon.svg"))
-                    c_err_box.setWindowTitle("Connection Error")
-                    c_err_box.setText(msgtxt)
-                    c_err_box.setStandardButtons(
-                        QMessageBox.Retry | QMessageBox.Abort
-                    )
-                    c_err_box.setDefaultButton(QMessageBox.Retry)
-                    c_err_box.addButton(
-                        "Use &Simulator", QMessageBox.AcceptRole
-                    )
-                    ret = c_err_box.exec_()
-                    if ret == QMessageBox.Retry:
-                        if self.simulator:
-                            self.hcomm = acsc.openCommDirect()
-                        else:
-                            self.hcomm = acsc.openCommEthernetTCP(
-                                "10.0.0.100", 701
-                            )
-                    elif ret == QMessageBox.Abort:
-                        self.connectfail = True
-                        self.retry = False
-                        self.timer_fast.start(10)
-                    elif ret == QMessageBox.AcceptRole:
-                        self.simulator = True
-                        self.hcomm = acsc.openCommDirect()
-                        self.retry = False
+                break
+            except acsc.AcscError:
+                self.hcomm = acsc.INVALID
+            # If connection fails, bring up error message box
+            msgtxt = "Unable to connect to controller.\n\n"
+            msgtxt += "Check that controller is powered-on and "
+            msgtxt += "SPiiPlus User Mode Driver is running."
+            c_err_box = QMessageBox()
+            c_err_box.setIcon(QMessageBox.Critical)
+            c_err_box.setWindowIcon(QIcon(":/icons/tow_icon.svg"))
+            c_err_box.setWindowTitle("Connection Error")
+            c_err_box.setText(msgtxt)
+            c_err_box.setStandardButtons(
+                QMessageBox.Retry | QMessageBox.Abort
+            )
+            c_err_box.setDefaultButton(QMessageBox.Retry)
+            c_err_box.addButton(
+                "Use &Simulator", QMessageBox.AcceptRole
+            )
+            ret = c_err_box.exec_()
+            if ret == QMessageBox.Retry:
+                continue
+            elif ret == QMessageBox.Abort:
+                self.connectfail = True
+                self.retry = False
+                self.timer_fast.start(10)
+            elif ret == QMessageBox.AcceptRole:
+                self.simulator = True
+                self.hcomm = acsc.openCommDirect()
+                self.retry = False
 
         if self.hcomm != acsc.INVALID:
             self.timer_slow.start(150)
