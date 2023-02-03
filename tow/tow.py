@@ -380,9 +380,9 @@ class MainWindow(QMainWindow):
 
     def on_actionAbout(self):
         about_text = "<b>Tow {}</b><br>".format(__version__)
-        about_text.append("A simple towing app for the UNH tow tank<br><br>")
-        about_text.append("By Pete Bachant<br>")
-        about_text.append("petebachant@gmail.com")
+        about_text += "A simple towing app for the UNH tow tank<br><br>"
+        about_text += "By Pete Bachant<br>"
+        about_text += "petebachant@gmail.com"
         QMessageBox.about(self, "About Tow", about_text)
 
     def on_traverseChange(self):
