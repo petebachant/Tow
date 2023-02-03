@@ -242,7 +242,7 @@ class Ui_MainWindow(object):
         self.tabWidgetMode.addTab(self.back_and_forth, "")
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QtWidgets.QMenuBar(MainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 301, 21))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 301, 25))
         self.menuBar.setObjectName("menuBar")
         self.menuOptions = QtWidgets.QMenu(self.menuBar)
         self.menuOptions.setObjectName("menuOptions")
