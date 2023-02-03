@@ -84,36 +84,43 @@ class MainWindow(QMainWindow):
         if self.simulator:
             self.hcomm = acsc.openCommDirect()
         else:
-            self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
-
-        # If connection fails, bring up error message box
-        while self.hcomm == acsc.INVALID and self.retry:
-            msgtxt = "Unable to connect to controller.\n\n"
-            msgtxt += "Check that controller is powered-on and "
-            msgtxt += "SPiiPlus User Mode Driver is running."
-            c_err_box = QMessageBox()
-            c_err_box.setIcon(QMessageBox.Critical)
-            c_err_box.setWindowIcon(QIcon(":/icons/tow_icon.svg"))
-            c_err_box.setWindowTitle("Connection Error")
-            c_err_box.setText(msgtxt)
-            c_err_box.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort)
-            c_err_box.setDefaultButton(QMessageBox.Retry)
-            c_err_box.addButton("Use &Simulator", QMessageBox.AcceptRole)
-
-            ret = c_err_box.exec_()
-
-            if ret == QMessageBox.Retry:
-                if self.simulator:
-                    self.hcomm = acsc.openCommDirect()
-                else:
+            while self.retry:
+                try:
                     self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
-            elif ret == QMessageBox.Abort:
-                self.connectfail = True
-                self.retry = False
-                self.timer_fast.start(10)
-            elif ret == QMessageBox.AcceptRole:
-                self.simulator = True
-                self.hcomm = acsc.openCommDirect()
+                except acsc.AcscError:
+                    self.hcomm = acsc.INVALID
+                    # If connection fails, bring up error message box
+                    msgtxt = "Unable to connect to controller.\n\n"
+                    msgtxt += "Check that controller is powered-on and "
+                    msgtxt += "SPiiPlus User Mode Driver is running."
+                    c_err_box = QMessageBox()
+                    c_err_box.setIcon(QMessageBox.Critical)
+                    c_err_box.setWindowIcon(QIcon(":/icons/tow_icon.svg"))
+                    c_err_box.setWindowTitle("Connection Error")
+                    c_err_box.setText(msgtxt)
+                    c_err_box.setStandardButtons(
+                        QMessageBox.Retry | QMessageBox.Abort
+                    )
+                    c_err_box.setDefaultButton(QMessageBox.Retry)
+                    c_err_box.addButton(
+                        "Use &Simulator", QMessageBox.AcceptRole
+                    )
+                    ret = c_err_box.exec_()
+                    if ret == QMessageBox.Retry:
+                        if self.simulator:
+                            self.hcomm = acsc.openCommDirect()
+                        else:
+                            self.hcomm = acsc.openCommEthernetTCP(
+                                "10.0.0.100", 701
+                            )
+                    elif ret == QMessageBox.Abort:
+                        self.connectfail = True
+                        self.retry = False
+                        self.timer_fast.start(10)
+                    elif ret == QMessageBox.AcceptRole:
+                        self.simulator = True
+                        self.hcomm = acsc.openCommDirect()
+                        self.retry = False
 
         if self.hcomm != acsc.INVALID:
             self.timer_slow.start(150)
@@ -125,7 +132,8 @@ class MainWindow(QMainWindow):
         acsc.registerEmergencyStop()
 
         # Make sure jog program is not running
-        acsc.stopBuffer(self.hcomm, 5)
+        if self.hcomm != acsc.INVALID:
+            acsc.stopBuffer(self.hcomm, 5)
 
         # Create the jog group action group
         self.offset_group = QActionGroup(self)
@@ -255,6 +263,7 @@ class MainWindow(QMainWindow):
     def on_timer_fast(self):
         if self.hcomm == acsc.INVALID:
             self.close()
+            return
         self.ui.tabWidgetMode.setEnabled(self.axis_enabled)
         self.ui.dock_jog.setEnabled(self.axis_enabled)
         self.ui.pbJogPendant.setEnabled(self.axis_enabled)
@@ -460,8 +469,9 @@ class MainWindow(QMainWindow):
         QDesktopServices.openUrl(url)
 
     def closeEvent(self, event):
-        acsc.stopBuffer(self.hcomm, 5)
-        acsc.closeComm(self.hcomm)
+        if self.hcomm != acsc.INVALID:
+            acsc.stopBuffer(self.hcomm, 5)
+            acsc.closeComm(self.hcomm)
         acsc.unregisterEmergencyStop()
         self.settings["Last window location"] = [
             self.pos().x(),
