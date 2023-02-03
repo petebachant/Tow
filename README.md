@@ -15,7 +15,7 @@ which is part of the [ACSpy](https://github.com/petebachant/ACSpy) package.
 
 After installing all the necessary dependencies, execute
 
-    python setup.py install
+    pip install .
 
 If you'd like to create a shortcut, run
 
