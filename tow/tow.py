@@ -456,10 +456,7 @@ class MainWindow(QMainWindow):
         self.ui.posSpinBox_baf2.setDisabled(True)
 
     def on_wiki(self):
-        url = QUrl(
-            "https://marine.unh.edu/oelab/wiki/doku.php?id=tow_tank:"
-            "operation:tow_system#simple_carriage_motionusing_tow"
-        )
+        url = QUrl("https://github.com/unh-oe/wave-tow-tank/wiki")
         QDesktopServices.openUrl(url)
 
     def closeEvent(self, event):
