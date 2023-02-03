@@ -2,11 +2,11 @@
 
 echo Building GUI
 
-python -m PyQt4.uic.pyuic.py tow/mainwindow.ui -o tow/mainwindow.py
+python -m PyQt5.uic.pyuic tow/mainwindow.ui -o tow/mainwindow.py
 
 echo Building resource file
 
-pyrcc4 -py3 tow/icons/tow_resources.qrc -o tow/tow_resources_rc.py
+python -m PyQt5.pyrcc_main tow/icons/tow_resources.qrc -o tow/tow_resources_rc.py
 
 echo Replacing relative import
 

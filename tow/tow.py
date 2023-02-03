@@ -1,28 +1,22 @@
-# -*- coding: utf-8 -*-
-"""To create interface, run `../makeui.sh`."""
+"""Tow application."""
 
-from __future__ import division, print_function
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from PyQt4 import QtGui
-from PyQt4 import QtNetwork
-try:
-    from PyQt4.QtCore import QString
-except ImportError:
-    # we are using Python3 so QString is not defined
-    QString = str
-from .mainwindow import *
-import sys
-import os
 import json
+import os
+import sys
+
 from acspy import acsc
+from PyQt5 import QtGui, QtNetwork
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+
 from .__init__ import __version__
+from .mainwindow import *
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self, parent=None):
-        QtGui.QMainWindow.__init__(self)
+        QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
@@ -99,19 +93,20 @@ class MainWindow(QtGui.QMainWindow):
             msgtxt += "SPiiPlus User Mode Driver is running."
             c_err_box = QMessageBox()
             c_err_box.setIcon(QMessageBox.Critical)
-            c_err_box.setWindowIcon(QIcon(':/icons/tow_icon.svg'))
+            c_err_box.setWindowIcon(QIcon(":/icons/tow_icon.svg"))
             c_err_box.setWindowTitle("Connection Error")
             c_err_box.setText(msgtxt)
             c_err_box.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort)
             c_err_box.setDefaultButton(QMessageBox.Retry)
-            c_err_box.addButton("Use &Simulator",
-                                QMessageBox.AcceptRole)
+            c_err_box.addButton("Use &Simulator", QMessageBox.AcceptRole)
 
             ret = c_err_box.exec_()
 
             if ret == QMessageBox.Retry:
-                if self.simulator: self.hcomm = acsc.openCommDirect()
-                else: self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
+                if self.simulator:
+                    self.hcomm = acsc.openCommDirect()
+                else:
+                    self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
             elif ret == QMessageBox.Abort:
                 self.connectfail = True
                 self.retry = False
@@ -139,11 +134,13 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.traverse2m.setActionGroup(self.offset_group)
         self.ui.traverse3m.setActionGroup(self.offset_group)
         self.ui.traverse4m.setActionGroup(self.offset_group)
-        self.traverse_offset_actions = {"off": self.ui.traverseOff,
-                                        "1m": self.ui.traverse1m,
-                                        "2m": self.ui.traverse2m,
-                                        "3m": self.ui.traverse3m,
-                                        "4m": self.ui.traverse4m}
+        self.traverse_offset_actions = {
+            "off": self.ui.traverseOff,
+            "1m": self.ui.traverse1m,
+            "2m": self.ui.traverse2m,
+            "3m": self.ui.traverse3m,
+            "4m": self.ui.traverse4m,
+        }
 
         # Create TCP server for remote control
         remoteserver = QtNetwork.QTcpServer()
@@ -167,8 +164,12 @@ class MainWindow(QtGui.QMainWindow):
         except IOError:
             self.settings = {}
         if "Last window location" in self.settings:
-            self.move(QPoint(self.settings["Last window location"][0],
-                             self.settings["Last window location"][1]))
+            self.move(
+                QPoint(
+                    self.settings["Last window location"][0],
+                    self.settings["Last window location"][1],
+                )
+            )
         if "Mode index" in self.settings:
             self.ui.tabWidgetMode.setCurrentIndex(self.settings["Mode index"])
         if "Traverse offset" in self.settings:
@@ -247,8 +248,9 @@ class MainWindow(QtGui.QMainWindow):
             acsc.stopBuffer(self.hcomm, 5)
 
         if self.simulator == False:
-            self.homecounter = acsc.readInteger(self.hcomm, None,
-                                                "homeCounter_tow")
+            self.homecounter = acsc.readInteger(
+                self.hcomm, None, "homeCounter_tow"
+            )
 
     def on_timer_fast(self):
         if self.hcomm == acsc.INVALID:
@@ -306,7 +308,7 @@ class MainWindow(QtGui.QMainWindow):
         acsc.setVelocity(self.hcomm, self.axis, vel)
         acsc.setAcceleration(self.hcomm, self.axis, acc)
         acsc.setDeceleration(self.hcomm, self.axis, acc)
-        acsc.setJerk(self.hcomm, self.axis, acc*10)
+        acsc.setJerk(self.hcomm, self.axis, acc * 10)
         if self.ui.rbRelative.isChecked() == True:
             flags = acsc.AMF_RELATIVE
         else:
@@ -377,10 +379,10 @@ class MainWindow(QtGui.QMainWindow):
         acsc.halt(self.hcomm, self.axis)
 
     def on_actionAbout(self):
-        about_text = QString("<b>Tow {}</b><br>".format(__version__))
-        about_text.append("A simple towing app for the UNH tow tank<br><br>")
-        about_text.append("By Pete Bachant<br>")
-        about_text.append("petebachant@gmail.com")
+        about_text = "<b>Tow {}</b><br>".format(__version__)
+        about_text += "A simple towing app for the UNH tow tank<br><br>"
+        about_text += "By Pete Bachant<br>"
+        about_text += "petebachant@gmail.com"
         QMessageBox.about(self, "About Tow", about_text)
 
     def on_traverseChange(self):
@@ -414,7 +416,7 @@ class MainWindow(QtGui.QMainWindow):
         acsc.setVelocity(self.hcomm, self.axis, vel)
         acsc.setAcceleration(self.hcomm, self.axis, acc)
         acsc.setDeceleration(self.hcomm, self.axis, acc)
-        acsc.setJerk(self.hcomm, self.axis, acc*10)
+        acsc.setJerk(self.hcomm, self.axis, acc * 10)
         acsc.toPoint(self.hcomm, None, self.axis, self.leftlimit)
 
     def on_goRightLimit(self):
@@ -423,7 +425,7 @@ class MainWindow(QtGui.QMainWindow):
         acsc.setVelocity(self.hcomm, self.axis, vel)
         acsc.setAcceleration(self.hcomm, self.axis, acc)
         acsc.setDeceleration(self.hcomm, self.axis, acc)
-        acsc.setJerk(self.hcomm, self.axis, acc*10)
+        acsc.setJerk(self.hcomm, self.axis, acc * 10)
         acsc.toPoint(self.hcomm, None, self.axis, 0.0)
 
     def on_goPlatform(self):
@@ -432,7 +434,7 @@ class MainWindow(QtGui.QMainWindow):
         acsc.setVelocity(self.hcomm, self.axis, vel)
         acsc.setAcceleration(self.hcomm, self.axis, acc)
         acsc.setDeceleration(self.hcomm, self.axis, acc)
-        acsc.setJerk(self.hcomm, self.axis, acc*10)
+        acsc.setJerk(self.hcomm, self.axis, acc * 10)
         acsc.toPoint(self.hcomm, None, self.axis, self.platform)
 
     def on_override(self):
@@ -454,16 +456,17 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.posSpinBox_baf2.setDisabled(True)
 
     def on_wiki(self):
-        url = QUrl("https://marine.unh.edu/oelab/wiki/doku.php?id=tow_tank:"
-                   "operation:tow_system#simple_carriage_motionusing_tow")
+        url = QUrl("https://github.com/unh-oe/wave-tow-tank/wiki")
         QDesktopServices.openUrl(url)
 
     def closeEvent(self, event):
         acsc.stopBuffer(self.hcomm, 5)
         acsc.closeComm(self.hcomm)
         acsc.unregisterEmergencyStop()
-        self.settings["Last window location"] = [self.pos().x(),
-                                                 self.pos().y()]
+        self.settings["Last window location"] = [
+            self.pos().x(),
+            self.pos().y(),
+        ]
         self.settings["Mode index"] = self.ui.tabWidgetMode.currentIndex()
         for key, val in self.traverse_offset_actions.items():
             if val.isChecked():
@@ -473,7 +476,8 @@ class MainWindow(QtGui.QMainWindow):
             "absolute": self.ui.rbAbsolute.isChecked(),
             "pos": self.ui.posSpinBox.value(),
             "vel": self.ui.velSpinBox.value(),
-            "acc": self.ui.accSpinBox.value()}
+            "acc": self.ui.accSpinBox.value(),
+        }
         self.settings["Back-and-forth"] = {
             "absolute": self.ui.rbAbsolute_baf.isChecked(),
             "p1": self.ui.posSpinBox_baf1.value(),
@@ -482,23 +486,21 @@ class MainWindow(QtGui.QMainWindow):
             "v2": self.ui.velSpinBox_baf2.value(),
             "a1": self.ui.accSpinBox_baf1.value(),
             "a2": self.ui.accSpinBox_baf2.value(),
-            "loop": self.ui.checkBox_loop.isChecked()}
+            "loop": self.ui.checkBox_loop.isChecked(),
+        }
         with open(self.settings_fpath, "w") as f:
             json.dump(self.settings, f, indent=4)
 
 
 def main():
-
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     height = QDesktopWidget().screenGeometry().height()
     width = QDesktopWidget().screenGeometry().width()
-
     w = MainWindow()
     w.show()
     w.setFixedSize(w.size())
-
     sys.exit(app.exec_())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
