@@ -383,7 +383,10 @@ class MainWindow(QMainWindow):
             self.jogmode = False
 
     def on_halt(self):
-        acsc.writeInteger(self.hcomm, "move", 0)
+        try:
+            acsc.writeInteger(self.hcomm, "move", 0)
+        except acsc.AcscError as e:
+            print(f"ACSC exception in on_halt: {e}")
         acsc.stopBuffer(self.hcomm, 19)
         acsc.halt(self.hcomm, self.axis)
 
