@@ -13,6 +13,8 @@ from PyQt5.QtWidgets import *
 from .__init__ import __version__
 from .mainwindow import *
 
+_thisdir = os.path.dirname(os.path.abspath(__file__))
+
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -510,6 +512,9 @@ def main():
     height = QDesktopWidget().screenGeometry().height()
     width = QDesktopWidget().screenGeometry().width()
     w = MainWindow()
+    w.setWindowIcon(
+        QtGui.QIcon(os.path.join(_thisdir, "icons", "tow_icon.svg"))
+    )
     w.show()
     w.setFixedSize(w.size())
     sys.exit(app.exec_())
