@@ -17,5 +17,5 @@ build:
 	--add-data "tow/icons:tow/icons" \
 	--icon tow/icons/tow_icon.ico
 
-shortcut:
+shortcut: build
 	@uv run scripts/create_shortcut.py
