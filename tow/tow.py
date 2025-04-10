@@ -10,7 +10,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from .__init__ import __version__
 from .mainwindow import *
 
 _thisdir = os.path.dirname(os.path.abspath(__file__))
@@ -102,13 +101,9 @@ class MainWindow(QMainWindow):
             c_err_box.setWindowIcon(QIcon(":/icons/tow_icon.svg"))
             c_err_box.setWindowTitle("Connection Error")
             c_err_box.setText(msgtxt)
-            c_err_box.setStandardButtons(
-                QMessageBox.Retry | QMessageBox.Abort
-            )
+            c_err_box.setStandardButtons(QMessageBox.Retry | QMessageBox.Abort)
             c_err_box.setDefaultButton(QMessageBox.Retry)
-            c_err_box.addButton(
-                "Use &Simulator", QMessageBox.AcceptRole
-            )
+            c_err_box.addButton("Use &Simulator", QMessageBox.AcceptRole)
             ret = c_err_box.exec_()
             if ret == QMessageBox.Retry:
                 continue
@@ -390,6 +385,10 @@ class MainWindow(QMainWindow):
         acsc.halt(self.hcomm, self.axis)
 
     def on_actionAbout(self):
+        """Show the about dialog."""
+        import tow
+
+        __version__ = tow.__version__
         about_text = "<b>Tow {}</b><br>".format(__version__)
         about_text += "A simple towing app for the UNH tow tank<br><br>"
         about_text += "By Pete Bachant<br>"

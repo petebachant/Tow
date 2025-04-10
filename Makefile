@@ -1,12 +1,21 @@
-.PHONY: run ui
+.PHONY: run ui shortcut build
 
 run:
-	@python -c "from tow import tow; tow.main()"
+	@uv run tow"
 
 
 ui:
-	@bash scripts/makeui.sh
+	@uv run bash scripts/makeui.sh
 
+
+build:
+	@uv run pyinstaller scripts/tow-script.py \
+	--onedir \
+	--noconsole \
+	--noconfirm \
+	--name tow \
+	--add-data "tow/icons:tow/icons" \
+	--icon tow/icons/tow_icon.ico
 
 shortcut:
-	@python scripts/create_shortcut.py
+	@uv run scripts/create_shortcut.py
