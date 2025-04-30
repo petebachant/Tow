@@ -1,7 +1,7 @@
 .PHONY: run ui shortcut build
 
 run:
-	@uv run tow"
+	@uv run tow
 
 
 ui:
