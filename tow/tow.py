@@ -249,7 +249,7 @@ class MainWindow(QMainWindow):
             self.jogmode = False
             acsc.stopBuffer(self.hcomm, 5)
 
-        if self.simulator == False:
+        if not self.simulator:
             self.homecounter = acsc.readInteger(
                 self.hcomm, None, "homeCounter_tow"
             )
@@ -263,14 +263,14 @@ class MainWindow(QMainWindow):
         self.ui.pbJogPendant.setEnabled(self.axis_enabled)
         self.ui.toolBar_Jog.setEnabled(self.axis_enabled)
 
-        if self.homecounter > 0 or self.override == True:
+        if self.homecounter > 0 or self.override:
             self.ui.rbAbsolute.setEnabled(True)
             self.ui.rbAbsolute_baf.setEnabled(True)
             if self.homecounter > 0:
                 self.ui.groupBox_shortcuts.setEnabled(True)
                 self.hlabel.setText("Homed ")
 
-        if self.jogmode == True:
+        if self.jogmode:
             self.ui.pbJogPendant.setChecked(True)
             self.ui.actionJogPendant.setChecked(True)
         else:
@@ -312,7 +312,7 @@ class MainWindow(QMainWindow):
         acsc.setAcceleration(self.hcomm, self.axis, acc)
         acsc.setDeceleration(self.hcomm, self.axis, acc)
         acsc.setJerk(self.hcomm, self.axis, acc * 10)
-        if self.ui.rbRelative.isChecked() == True:
+        if self.ui.rbRelative.isChecked():
             flags = acsc.AMF_RELATIVE
         else:
             flags = None
@@ -369,10 +369,10 @@ class MainWindow(QMainWindow):
         acsc.halt(self.hcomm, self.axis)
 
     def on_JogPendant(self):
-        if self.jogmode == False:
+        if not self.jogmode:
             self.jogmode = True
             acsc.runBuffer(self.hcomm, 5, None)
-        elif self.jogmode == True:
+        elif self.jogmode:
             acsc.stopBuffer(self.hcomm, 5)
             self.jogmode = False
 
