@@ -504,6 +504,7 @@ class MainWindow(QMainWindow):
 
 
 def main():
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
     app = QApplication(sys.argv)
     height = QDesktopWidget().screenGeometry().height()
     width = QDesktopWidget().screenGeometry().width()
