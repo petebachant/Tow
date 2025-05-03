@@ -236,6 +236,10 @@ class MainWindow(QMainWindow):
         self.ui.pbGo_baf.clicked.connect(self.on_go_baf)
 
     def on_timer_slow(self):
+        if self.hcomm == acsc.INVALID:
+            self.close()
+            return
+
         self.axis_enabled = acsc.getMotorEnabled(self.hcomm, self.axis)
 
         if self.axis_enabled:
@@ -278,10 +282,13 @@ class MainWindow(QMainWindow):
             self.ui.actionJogPendant.setChecked(False)
 
         # Get and display reference position and velocity
-        self.rpos = acsc.getRPosition(self.hcomm, self.axis)
-        self.rvel = acsc.getRVelocity(self.hcomm, self.axis)
-        self.poslabel.setText("Pos. (m): %.3f " % self.rpos)
-        self.vellabel.setText("Vel. (m/s): %.2f " % self.rvel)
+        try:
+            self.rpos = acsc.getRPosition(self.hcomm, self.axis)
+            self.rvel = acsc.getRVelocity(self.hcomm, self.axis)
+            self.poslabel.setText("Pos. (m): %.3f " % self.rpos)
+            self.vellabel.setText("Vel. (m/s): %.2f " % self.rvel)
+        except Exception as e:
+            print(f"Failed to get reference position/velocity: {e}")
 
     def on_enableAxis_click(self):
         if not self.axis_enabled:
