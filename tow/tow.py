@@ -36,6 +36,7 @@ class MainWindow(QMainWindow):
         self.ui.velSpinBox_baf2.setMaximum(2.0)
 
         # Set initial states of all buttons
+        self.ui.tabWidgetMode.setEnabled(False)
         self.ui.rbAbsolute.setEnabled(False)
         self.ui.rbAbsolute_baf.setEnabled(False)
         self.ui.enableAxis.setEnabled(False)
@@ -263,12 +264,17 @@ class MainWindow(QMainWindow):
         if self.hcomm == acsc.INVALID:
             self.close()
             return
-        self.ui.tabWidgetMode.setEnabled(self.axis_enabled)
+
+        enable_moves = (
+            self.homecounter > 0 or self.override
+        ) and self.axis_enabled
+        self.ui.tabWidgetMode.setEnabled(enable_moves)
         self.ui.dock_jog.setEnabled(self.axis_enabled)
         self.ui.pbJogPendant.setEnabled(self.axis_enabled)
         self.ui.toolBar_Jog.setEnabled(self.axis_enabled)
 
         if self.homecounter > 0 or self.override:
+            self.ui.labelNotHomed.setVisible(False)
             self.ui.rbAbsolute.setEnabled(True)
             self.ui.rbAbsolute_baf.setEnabled(True)
             if self.homecounter > 0:
