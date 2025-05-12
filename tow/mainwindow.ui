@@ -775,9 +775,9 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>10</y>
+      <y>90</y>
       <width>281</width>
-      <height>201</height>
+      <height>41</height>
      </rect>
     </property>
     <property name="font">
@@ -791,7 +791,7 @@
      <bool>true</bool>
     </property>
     <property name="text">
-     <string>Axis must be homed to enable moves.</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt; color:#ff0000;&quot;&gt;Axis must be homed to enable moves.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
