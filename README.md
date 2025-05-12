@@ -15,3 +15,18 @@ make shortcut
 ```
 
 This shortcut can be copied wherever you like, pinned to the taskbar, etc.
+
+## Editing the UI
+
+To edit the UI interactively with Qt Designer, call:
+
+```sh
+make edit-ui
+```
+
+After saving changes, compile the `mainwindow.ui` file to a Python module
+with:
+
+```sh
+make ui
+```
