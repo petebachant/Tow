@@ -3,7 +3,6 @@
 run:
 	@uv run tow
 
-
 ui:
 	@uv run bash scripts/makeui.sh
 
