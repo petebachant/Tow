@@ -55,7 +55,8 @@ class MainWindow(QMainWindow):
 
         # Add some labels to the status bar
         self.hlabel = QLabel()
-        self.hlabel.setText("Not homed ")
+        self.hlabel.setStyleSheet("color: red;")
+        self.hlabel.setText(" Not homed ")
         self.ui.statusBar.addWidget(self.hlabel)
         self.poslabel = QLabel()
         self.poslabel.setText("Pos. (m): ")
@@ -272,7 +273,8 @@ class MainWindow(QMainWindow):
             self.ui.rbAbsolute_baf.setEnabled(True)
             if self.homecounter > 0:
                 self.ui.groupBox_shortcuts.setEnabled(True)
-                self.hlabel.setText("Homed ")
+                self.hlabel.setText(" Homed ")
+                self.hlabel.setStyleSheet("color: green;")
 
         if self.jogmode:
             self.ui.pbJogPendant.setChecked(True)
