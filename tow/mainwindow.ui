@@ -778,7 +778,7 @@
      <x>0</x>
      <y>0</y>
      <width>301</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuOptions">
@@ -802,16 +802,7 @@
      <addaction name="traverse4m"/>
      <addaction name="traverseCustom"/>
     </widget>
-    <widget class="QMenu" name="menuAutomatic_Tweet">
-     <property name="title">
-      <string>Automatic Tweeting</string>
-     </property>
-     <addaction name="actionTweet_On_PTP"/>
-     <addaction name="actionTweet_On_Jog"/>
-     <addaction name="actionTweet_On_Enable_Disable"/>
-    </widget>
     <addaction name="menuTraverse_Offset"/>
-    <addaction name="menuAutomatic_Tweet"/>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
