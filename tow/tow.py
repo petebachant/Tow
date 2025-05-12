@@ -487,6 +487,7 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event):
         if self.hcomm != acsc.INVALID:
             acsc.stopBuffer(self.hcomm, 5)
+            acsc.stopBuffer(self.hcomm, 19)
             acsc.closeComm(self.hcomm)
         acsc.unregisterEmergencyStop()
         self.settings["Last window location"] = [
