@@ -1,12 +1,10 @@
-.PHONY: run ui shortcut build
+.PHONY: run ui shortcut build edit-ui
 
 run:
 	@uv run tow
 
-
 ui:
 	@uv run bash scripts/makeui.sh
-
 
 build:
 	@uv run pyinstaller scripts/tow-script.py \
@@ -19,3 +17,6 @@ build:
 
 shortcut: build
 	@uv run scripts/create_shortcut.py
+
+edit-ui:
+	@uv run qt5-tools designer tow/mainwindow.ui
