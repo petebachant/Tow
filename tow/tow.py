@@ -30,6 +30,17 @@ class MainWindow(QMainWindow):
         self.override = False
         self.axis_enabled = False
 
+        # Blue-button jog deadman watchdog (see setup_jog_watchdog).
+        # Per the controller's programs.prg, buffers 0-16 and 18-21 are in
+        # use (e.g. 2 = homing, 5 = pendant) and 19 is clobbered by both the
+        # back-and-forth move and TurbineDAQ. Buffer 17 is the only free slot
+        # in that range, so the watchdog gets its own dedicated buffer there.
+        self.jog_buffer = 17
+        self.jog_vel = 0.2
+        self.jog_dir = 0  # +1 / -1 while a button is held, else 0
+        self.jog_beat = 0  # heartbeat counter refreshed while a button is held
+        self.jog_running = False
+
         # Set maximum velocities to 2 m/s
         self.ui.velSpinBox.setMaximum(2.0)
         self.ui.velSpinBox_baf1.setMaximum(2.0)
@@ -88,7 +99,7 @@ class MainWindow(QMainWindow):
         while self.retry and self.hcomm == acsc.INVALID:
             try:
                 if self.simulator:
-                    self.hcomm = acsc.openCommDirect()
+                    self.hcomm = self.open_simulator()
                 else:
                     self.hcomm = acsc.openCommEthernetTCP("10.0.0.100", 701)
                 break
@@ -115,7 +126,7 @@ class MainWindow(QMainWindow):
                 self.timer_fast.start(10)
             elif ret == QMessageBox.AcceptRole:
                 self.simulator = True
-                self.hcomm = acsc.openCommDirect()
+                self.hcomm = self.open_simulator()
                 self.retry = False
 
         if self.hcomm != acsc.INVALID:
@@ -130,6 +141,10 @@ class MainWindow(QMainWindow):
         # Make sure jog program is not running
         if self.hcomm != acsc.INVALID:
             acsc.stopBuffer(self.hcomm, 5)
+
+        # Load and start the blue-button jog deadman watchdog
+        if self.hcomm != acsc.INVALID:
+            self.setup_jog_watchdog()
 
         # Create the jog group action group
         self.offset_group = QActionGroup(self)
@@ -155,6 +170,19 @@ class MainWindow(QMainWindow):
 
         # Load settings
         self.load_settings()
+
+    def open_simulator(self):
+        """Open a connection to the SPiiPlus simulator.
+
+        acspy 0.0.9's ``open_comm_simulator`` and ``open_comm_direct`` call
+        each other on failure and recurse infinitely (and ``open_comm_direct``
+        blocks on this machine, which has no direct/PCI controller). Call the
+        simulator entry point directly and check the handle ourselves.
+        """
+        hcomm = acsc.acs.acsc_OpenCommSimulator()
+        if hcomm == acsc.INVALID:
+            raise acsc.AcscError("Could not connect to SPiiPlus simulator")
+        return hcomm
 
     def load_settings(self):
         """
@@ -254,6 +282,9 @@ class MainWindow(QMainWindow):
             self.ui.enableAxis.setIcon(QIcon(":icons/checkmark.png"))
             self.jogmode = False
             acsc.stopBuffer(self.hcomm, 5)
+            # Motor disabled: stop feeding the jog watchdog heartbeat so it
+            # can't command motion on a re-enable without a fresh press.
+            self.jog_dir = 0
 
         if not self.simulator:
             self.homecounter = acsc.readInteger(
@@ -288,6 +319,14 @@ class MainWindow(QMainWindow):
         else:
             self.ui.pbJogPendant.setChecked(False)
             self.ui.actionJogPendant.setChecked(False)
+
+        # Refresh the jog watchdog heartbeat while a blue button is held, and
+        # re-assert the commanded direction so a dropped direction packet
+        # self-heals on the next tick. Stopping the bumps (on release, crash,
+        # or freeze) lets the controller-side watchdog halt the axis on its own.
+        if self.jog_dir != 0:
+            self.write_jog_dir(self.jog_dir)
+            self.bump_jog_heartbeat()
 
         # Get and display reference position and velocity
         try:
@@ -365,23 +404,144 @@ class MainWindow(QMainWindow):
         acsc.loadBuffer(self.hcomm, 19, txt, 512)
         acsc.runBuffer(self.hcomm, 19)
 
+    def create_jog_watchdog_program(self):
+        """Build the ACSPL+ deadman watchdog program for the blue jog buttons.
+
+        Rather than commanding an open-ended velocity jog from the PC and
+        relying on a single network-delivered ``halt`` to stop it (which a
+        flaky link can silently drop, leaving the carriage jogging for
+        meters), this program runs *on the controller* and makes "stopped"
+        the default state. The PC sets ``towJogDir`` (+1/-1/0) and bumps a
+        ``towJogBeat`` heartbeat on every fast-timer tick while a button is
+        physically held. The controller jogs only while the heartbeat keeps
+        changing; if it goes stale (button released, packet lost, app crash,
+        frozen PC, or dropped link) the controller halts the axis on its own.
+
+        NOTE: This ACSPL+ must be syntax-checked and bench-tested against the
+        controller (e.g., in the SPiiPlus MMI) before it is trusted with a
+        rider on the carriage. It cannot be compiled off the hardware.
+        """
+        ax = self.axis
+        vel = self.jog_vel
+        loop_ms = 20  # watchdog loop period
+        stale_ms = 200  # halt if no fresh heartbeat within this window
+        txt = "GLOBAL INT towJogDir\n"
+        txt += "GLOBAL INT towJogBeat\n"
+        txt += "INT lastBeat\n"
+        txt += "INT staleMs\n"
+        txt += "INT curDir\n"
+        txt += "INT effDir\n"
+        txt += "towJogDir = 0\n"
+        txt += "towJogBeat = 0\n"
+        txt += "lastBeat = 0\n"
+        txt += "staleMs = 0\n"
+        txt += "curDir = 0\n"
+        txt += "effDir = 0\n"
+        txt += "ACC({}) = {}\n".format(ax, vel)
+        txt += "DEC({}) = {}\n".format(ax, vel)
+        txt += "JERK({}) = {}\n".format(ax, vel * 10)
+        txt += "WHILE 1\n"
+        txt += "    WAIT {}\n".format(loop_ms)
+        txt += "    IF towJogBeat <> lastBeat\n"
+        txt += "        lastBeat = towJogBeat\n"
+        txt += "        staleMs = 0\n"
+        txt += "    ELSE\n"
+        txt += "        staleMs = staleMs + {}\n".format(loop_ms)
+        txt += "    END\n"
+        # Effective direction is the commanded one only while the heartbeat
+        # is fresh; a stale heartbeat forces a stop regardless of towJogDir.
+        txt += "    IF staleMs >= {}\n".format(stale_ms)
+        txt += "        effDir = 0\n"
+        txt += "    ELSE\n"
+        txt += "        effDir = towJogDir\n"
+        txt += "    END\n"
+        # Only (re)issue a command when the effective direction changes.
+        txt += "    IF effDir <> curDir\n"
+        txt += "        IF effDir = 0\n"
+        txt += "            HALT {}\n".format(ax)
+        txt += "        ELSE\n"
+        txt += "            IF effDir > 0\n"
+        txt += "                JOG/v {}, {}\n".format(ax, vel)
+        txt += "            ELSE\n"
+        txt += "                JOG/v {}, {}\n".format(ax, -vel)
+        txt += "            END\n"
+        txt += "        END\n"
+        txt += "        curDir = effDir\n"
+        txt += "    END\n"
+        txt += "END\n"
+        txt += "STOP\n"
+        return txt
+
+    def setup_jog_watchdog(self):
+        """Load and start the jog deadman watchdog on the controller."""
+        try:
+            acsc.stopBuffer(self.hcomm, self.jog_buffer)
+            program = self.create_jog_watchdog_program()
+            # count must be >= the program length; this program is > 512 bytes.
+            acsc.loadBuffer(
+                self.hcomm,
+                self.jog_buffer,
+                program,
+                max(512, len(program.encode()) + 1),
+            )
+            acsc.runBuffer(self.hcomm, self.jog_buffer)
+            self.jog_running = True
+        except acsc.AcscError as e:
+            self.jog_running = False
+            print(f"Failed to start jog watchdog: {e}")
+
+    def write_jog_dir(self, value):
+        """Set the watchdog's commanded direction (+1/-1/0).
+
+        towJogDir and towJogBeat are globals declared inside the watchdog
+        buffer, so they must be addressed with the buffer number rather than
+        as bare controller globals.
+        """
+        try:
+            acsc.writeInteger(self.hcomm, "towJogDir", value, self.jog_buffer)
+        except acsc.AcscError as e:
+            print(f"Failed to write jog direction: {e}")
+
+    def bump_jog_heartbeat(self):
+        """Refresh the watchdog heartbeat (called while a button is held)."""
+        self.jog_beat = (self.jog_beat + 1) % 1000000
+        try:
+            acsc.writeInteger(
+                self.hcomm, "towJogBeat", self.jog_beat, self.jog_buffer
+            )
+        except acsc.AcscError as e:
+            # A dropped beat is harmless: the next tick retries, and if the
+            # link stays down the watchdog halts the axis on its own.
+            print(f"Failed to write jog heartbeat: {e}")
+
+    def start_jog(self, direction):
+        """Begin jogging in ``direction`` (+1/-1) via the watchdog."""
+        if not self.jog_running:
+            # Watchdog isn't running (e.g. earlier load failed); try again.
+            self.setup_jog_watchdog()
+        self.jog_dir = direction
+        # Command direction and beat immediately so motion starts without
+        # waiting for the timer.
+        self.write_jog_dir(direction)
+        self.bump_jog_heartbeat()
+
+    def stop_jog(self):
+        """Request a stop. Best-effort here; the heartbeat going stale is
+        the guaranteed failsafe if this command is lost."""
+        self.jog_dir = 0
+        self.write_jog_dir(0)
+
     def on_pbJogMinus_press(self):
-        acsc.setAcceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
-        acsc.setDeceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
-        acsc.setJerk(self.hcomm, self.axis, 2, acsc.SYNCHRONOUS)
-        acsc.jog(self.hcomm, acsc.AMF_VELOCITY, self.axis, -0.2)
+        self.start_jog(-1)
 
     def on_pbJogMinus_release(self):
-        acsc.halt(self.hcomm, self.axis)
+        self.stop_jog()
 
     def on_pbJogPlus_press(self):
-        acsc.setAcceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
-        acsc.setDeceleration(self.hcomm, self.axis, 0.2, acsc.SYNCHRONOUS)
-        acsc.setJerk(self.hcomm, self.axis, 2, acsc.SYNCHRONOUS)
-        acsc.jog(self.hcomm, acsc.AMF_VELOCITY, self.axis, 0.2)
+        self.start_jog(1)
 
     def on_pbJogPlus_release(self):
-        acsc.halt(self.hcomm, self.axis)
+        self.stop_jog()
 
     def on_JogPendant(self):
         if not self.jogmode:
@@ -485,10 +645,17 @@ class MainWindow(QMainWindow):
         QDesktopServices.openUrl(url)
 
     def closeEvent(self, event):
+        # Stop the timers first so on_timer_slow/on_timer_fast can't fire into
+        # a handle we're about to close (the simulator handle is 0, so the
+        # hcomm == INVALID guard alone wouldn't catch it).
+        self.timer_slow.stop()
+        self.timer_fast.stop()
         if self.hcomm != acsc.INVALID:
             acsc.stopBuffer(self.hcomm, 5)
             acsc.stopBuffer(self.hcomm, 19)
+            acsc.stopBuffer(self.hcomm, self.jog_buffer)
             acsc.closeComm(self.hcomm)
+            self.hcomm = acsc.INVALID
         acsc.unregisterEmergencyStop()
         self.settings["Last window location"] = [
             self.pos().x(),
