@@ -320,6 +320,15 @@ class MainWindow(QMainWindow):
             self.ui.pbJogPendant.setChecked(False)
             self.ui.actionJogPendant.setChecked(False)
 
+        # If we think we're jogging but neither blue button is physically held,
+        # the release signal was lost/delayed (e.g. focus stolen, button
+        # disabled mid-press). Self-correct so a stuck jog_dir can't keep the
+        # heartbeat alive and jog the carriage with no button down.
+        if self.jog_dir != 0 and not (
+            self.ui.pbJogPlus.isDown() or self.ui.pbJogMinus.isDown()
+        ):
+            self.stop_jog()
+
         # Refresh the jog watchdog heartbeat while a blue button is held, and
         # re-assert the commanded direction so a dropped direction packet
         # self-heals on the next tick. Stopping the bumps (on release, crash,
@@ -437,9 +446,6 @@ class MainWindow(QMainWindow):
         txt += "staleMs = 0\n"
         txt += "curDir = 0\n"
         txt += "effDir = 0\n"
-        txt += "ACC({}) = {}\n".format(ax, vel)
-        txt += "DEC({}) = {}\n".format(ax, vel)
-        txt += "JERK({}) = {}\n".format(ax, vel * 10)
         txt += "WHILE 1\n"
         txt += "    WAIT {}\n".format(loop_ms)
         txt += "    IF towJogBeat <> lastBeat\n"
@@ -460,6 +466,12 @@ class MainWindow(QMainWindow):
         txt += "        IF effDir = 0\n"
         txt += "            HALT {}\n".format(ax)
         txt += "        ELSE\n"
+        # Set the gentle jog dynamics right before each jog, so an earlier
+        # move (e.g. back-and-forth) that changed these axis params can't make
+        # the jog start with the wrong acceleration/jerk.
+        txt += "            ACC({}) = {}\n".format(ax, vel)
+        txt += "            DEC({}) = {}\n".format(ax, vel)
+        txt += "            JERK({}) = {}\n".format(ax, vel * 10)
         txt += "            IF effDir > 0\n"
         txt += "                JOG/v {}, {}\n".format(ax, vel)
         txt += "            ELSE\n"
@@ -650,12 +662,19 @@ class MainWindow(QMainWindow):
         # hcomm == INVALID guard alone wouldn't catch it).
         self.timer_slow.stop()
         self.timer_fast.stop()
+        # The shutdown calls touch the (possibly flaky) network. Make sure a
+        # failed stop/close can't skip invalidating the handle or saving
+        # settings below.
         if self.hcomm != acsc.INVALID:
-            acsc.stopBuffer(self.hcomm, 5)
-            acsc.stopBuffer(self.hcomm, 19)
-            acsc.stopBuffer(self.hcomm, self.jog_buffer)
-            acsc.closeComm(self.hcomm)
-            self.hcomm = acsc.INVALID
+            try:
+                acsc.stopBuffer(self.hcomm, 5)
+                acsc.stopBuffer(self.hcomm, 19)
+                acsc.stopBuffer(self.hcomm, self.jog_buffer)
+                acsc.closeComm(self.hcomm)
+            except acsc.AcscError as e:
+                print(f"Error during controller shutdown: {e}")
+            finally:
+                self.hcomm = acsc.INVALID
         acsc.unregisterEmergencyStop()
         self.settings["Last window location"] = [
             self.pos().x(),
